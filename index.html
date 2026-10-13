@@ -706,10 +706,17 @@
 
   .report-toast{
     position:fixed; left:50%; bottom:30px; transform:translate(-50%, 20px); z-index:1100;
-    background:#1F6B41; color:#fff; padding:14px 26px; border-radius:99px; font-size:14.5px; font-weight:700;
+    display:flex; align-items:center; gap:12px;
+    background:#1F6B41; color:#fff; padding:14px 18px 14px 26px; border-radius:99px; font-size:14.5px; font-weight:700;
     box-shadow:0 10px 24px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
   }
-  .report-toast.show{opacity:1; transform:translate(-50%, 0);}
+  .report-toast.show{opacity:1; transform:translate(-50%, 0); pointer-events:auto;}
+  .report-toast-close{
+    flex-shrink:0; padding:7px 14px; border-radius:99px; border:none; cursor:pointer;
+    background:rgba(255,255,255,.22); color:#fff; font-size:13px; font-weight:700; line-height:1; white-space:nowrap;
+    transition:background .15s;
+  }
+  .report-toast-close:hover{background:rgba(255,255,255,.38);}
 
   /* ===== 電銷／客服｜保養品必問（嵌入式展開卡片） ===== */
   .faq-guide-wrap{margin:20px 0 4px; text-align:left;}
@@ -821,7 +828,10 @@
   </div>
 </div>
 
-<div class="report-toast" id="reportToast">感謝回報，我們將盡快處理！</div>
+<div class="report-toast" id="reportToast">
+  <span class="report-toast-msg" id="reportToastMsg">感謝回報，我們將盡快處理！</span>
+  <button type="button" class="report-toast-close" onclick="hideToast()">我知道了</button>
+</div>
 
 <script>
 /* ======================================================================
@@ -5414,10 +5424,16 @@ function submitProblemReport(){
 let __toastHideTimer = null;
 function showToast(msg){
   const toast = document.getElementById('reportToast');
-  toast.textContent = msg;
+  const msgEl = document.getElementById('reportToastMsg');
+  if(msgEl){ msgEl.textContent = msg; } else { toast.textContent = msg; }
   toast.classList.add('show');
   if(__toastHideTimer) clearTimeout(__toastHideTimer);
-  __toastHideTimer = setTimeout(()=>{ toast.classList.remove('show'); }, 2600);
+  __toastHideTimer = setTimeout(()=>{ toast.classList.remove('show'); }, 4000);
+}
+function hideToast(){
+  const toast = document.getElementById('reportToast');
+  if(__toastHideTimer) clearTimeout(__toastHideTimer);
+  toast.classList.remove('show');
 }
 function showReportToast(){
   showToast('感謝回報，我們將盡快處理！');

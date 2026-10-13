@@ -511,6 +511,7 @@
   footer{
     border-top:1px solid var(--border); margin-top:40px; padding:26px 28px; text-align:center; font-size:13px; color:var(--muted);
   }
+  .footer-version{color:var(--muted); font-weight:600;}
 
   /* ===== 異議神助手 內嵌頁面 ===== */
   :root{
@@ -780,6 +781,7 @@
 
 <footer>
   Trustee Biomed 信賴生醫 內部教育訓練查詢系統（模板版）｜資料僅供內部教育訓練使用，請勿外流
+  <span id="footerVersion" class="footer-version"></span>
 </footer>
 
 <button class="report-fab" id="reportFab" onclick="openReportModal()" title="問題回報">
@@ -822,6 +824,15 @@
 <div class="report-toast" id="reportToast">感謝回報，我們將盡快處理！</div>
 
 <script>
+/* ======================================================================
+   系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
+   ====================================================================== */
+const SYSTEM_VERSION = {
+  version: 'v1.6',
+  date: '2026-10-13',
+  notes: '新增「電銷／客服｜保養品必問」指引卡片、問題回報浮鈕、頂部導覽列切換自動捲回頂部'
+};
+
 /* ======================================================================
    DATA —— 電銷／客服｜保養品必問 指引卡片（產品知識庫 / 客服知識庫 共用）
    ====================================================================== */
@@ -5411,8 +5422,29 @@ function showToast(msg){
 function showReportToast(){
   showToast('感謝回報，我們將盡快處理！');
 }
+/* ======================================================================
+   系統版本提示 —— 開啟頁面時顯示目前版本，並在頁尾標示版本號/更新日期
+   ====================================================================== */
+function initVersionNotice(){
+  const footerVersionEl = document.getElementById('footerVersion');
+  if(footerVersionEl){
+    footerVersionEl.textContent = `｜系統版本 ${SYSTEM_VERSION.version}（${SYSTEM_VERSION.date} 更新）`;
+  }
+  const VERSION_SEEN_KEY = 'tb_version_seen';
+  let alreadySeen = false;
+  try {
+    alreadySeen = localStorage.getItem(VERSION_SEEN_KEY) === SYSTEM_VERSION.version;
+  } catch(e) { alreadySeen = false; }
+  if(!alreadySeen){
+    setTimeout(()=>{
+      showToast(`✅ 已開啟最新版本 ${SYSTEM_VERSION.version}（${SYSTEM_VERSION.date} 更新）`);
+    }, 500);
+    try { localStorage.setItem(VERSION_SEEN_KEY, SYSTEM_VERSION.version); } catch(e) {}
+  }
+}
 /* init */
 render();
+initVersionNotice();
 </script>
 </body>
 </html>

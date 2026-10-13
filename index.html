@@ -2392,19 +2392,18 @@ function goEducation(){
   state = {brandId:null, moduleId:null, view:null};
   render();
   updateNavActive('navEdu');
-  setTimeout(()=>{
-    const grid = document.getElementById('brandGrid');
-    if(grid) grid.scrollIntoView({behavior:'smooth', block:'start'});
-  }, 50);
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 function goKnowledgeBase(query){
   state = {brandId:null, moduleId:null, view:'kb', kbQuery: query||''};
   render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 function goObjection(){
   state = {brandId:null, moduleId:null, view:'objection'};
   logSearchToGoogleForm({ category: '異議神助手' });
   render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
 }
 function submitGlobalSearch(){
   const val = document.getElementById('globalSearchInput').value.trim();

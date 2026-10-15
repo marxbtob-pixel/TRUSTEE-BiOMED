@@ -1875,6 +1875,9 @@ const BRANDS = [
     id:'house', name:'台睿生技 好硒家', tag:'醫療級活性硒・科研美妍保健食品',
     color:'#D4567A',
     desc:'源自台睿生技（TaiRx）醫療級新藥研發背景，獨家「硒立元®」高純度活性硒，結合余甘子、白番茄萃取與菸鹼醯胺，打造內外兼修的科研美妍保健食品。',
+    audioLessons:[
+      {name:'硒2皙美妍錠 語音教案', desc:'好硒家 硒2皙美妍錠 產品教育訓練語音課程', driveId:'1mw5XCXpmYs7WWm1KUmnU3EX023NFl4MG'},
+    ],
     products:[
       {
         name:'硒2皙美妍錠', spec:'美妍保健食品（10錠／30錠／60錠，多規格供應）', price:'NT$580（10錠／入門體驗）／NT$1,580（30錠／日常呵護）／NT$2,480（60錠／常備美麗）',
@@ -4995,7 +4998,38 @@ function sendChat(brandId){
 }
 
 /* ---------- 3. 語音教案 ---------- */
+function toggleAudioLesson(id){
+  const box = document.getElementById('audioPlayer-'+id);
+  if(!box) return;
+  if(box.dataset.loaded !== '1'){
+    box.innerHTML = `<iframe src="https://drive.google.com/file/d/${encodeURIComponent(id)}/preview" allow="autoplay" allowfullscreen style="width:100%; height:120px; border:0; border-radius:10px; background:var(--bg);"></iframe>
+      <div style="margin-top:6px; font-size:12.5px; color:var(--muted);">若無法播放，請確認 Google 雲端檔案已設為「知道連結的任何人皆可檢視」，或 <a href="https://drive.google.com/file/d/${encodeURIComponent(id)}/view" target="_blank" rel="noopener">在新分頁開啟 ↗</a></div>`;
+    box.dataset.loaded = '1';
+  }
+  box.style.display = box.style.display === 'none' ? '' : 'none';
+}
 function renderAudio(b){
+  if(b.audioLessons && b.audioLessons.length){
+    const body = document.getElementById('moduleBody');
+    body.innerHTML = `
+      <div class="panel">
+        <div class="lesson-list">
+          ${b.audioLessons.map(l=>`
+            <div class="lesson-item" style="flex-wrap:wrap;">
+              <button class="play-btn" onclick="toggleAudioLesson('${l.driveId}')">${ICONS.play}</button>
+              <div class="lesson-meta">
+                <div class="lname">${esc(l.name)}</div>
+                <div class="ldesc">${esc(l.desc||'')}</div>
+              </div>
+              ${l.dur ? `<div class="lesson-dur">${esc(l.dur)}</div>` : ''}
+              <div id="audioPlayer-${l.driveId}" style="display:none; flex-basis:100%; margin-top:10px;"></div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+    return;
+  }
   const lessons = [
     {name:`${b.name} 品牌介紹與定位`, desc:'品牌故事、核心成分與市場定位', dur:'08:12'},
     {name:`${b.name} 明星產品解析`, desc:'主力商品成分與使用方式', dur:'12:45'},

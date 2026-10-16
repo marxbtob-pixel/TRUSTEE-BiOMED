@@ -897,9 +897,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v1.7',
+  version: 'v1.8',
   date: '2026-10-16',
-  notes: '新增「好硒家」品牌與語音教案、「保養品成分解析」功能、手機版導覽列修正'
+  notes: '保養品成分解析：點擊成分卡片只送出一筆完整紀錄（進入頁面不再送出）'
 };
 
 /* ======================================================================
@@ -2455,7 +2455,7 @@ function logSearchToGoogleForm(data){
     pageHistory = '0,2';
   } else if (data.category === '保養品成分解析') {
     // 保養品成分解析：借用客服知識庫同一區段（第 3 區段）的「查詢內容」欄位
-    // 點擊功能按鈕時只帶「查詢類別」；點擊成分卡片時另帶「查詢內容」＝成分名稱
+    // 僅在點擊成分卡片時送出（查詢類別＋查詢內容＝成分名稱）；進入頁面不送出
     fields['entry.591856697'] = data.query || '';
     pageHistory = '0,2';
   } else if (data.category === '異議神助手') {
@@ -2547,12 +2547,13 @@ let __ingredientLogged = {};
 function goIngredient(){
   state = {brandId:null, moduleId:null, view:'ingredient'};
   __ingredientLogged = {};
-  logSearchToGoogleForm({ category: '保養品成分解析' });   // 點擊功能按鈕 → 查詢類別
+  // 進入頁面（點擊頂部按鈕）不送出紀錄，只在點擊成分卡片時送出一筆完整紀錄（見 clickIngredient）
   render();
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
 let __ingredientTitle = '';
-function clickIngredient(){
+function clickIngredient(e){
+  if(e && e.stopPropagation) e.stopPropagation();   // 避免事件冒泡觸發其他點擊紀錄
   if(!__ingredientTitle || __ingredientLogged[__ingredientTitle]) return;   // 同一次進入頁面只記錄一次，避免重複點擊灌水
   __ingredientLogged[__ingredientTitle] = true;
   logSearchToGoogleForm({ category: '保養品成分解析', query: __ingredientTitle });   // 點擊成分 → 查詢內容
@@ -2571,7 +2572,7 @@ function renderIngredientPage(){
             const title = (nl === -1 ? text : text.slice(0, nl)).trim();
             const rest = nl === -1 ? '' : text.slice(nl + 1).trim();
             __ingredientTitle = title;
-            return `<div class="ingredient-name ingredient-clickable" role="button" tabindex="0" onclick="clickIngredient()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();clickIngredient();}"><span class="ingredient-name-tag">成分 01</span><h2>${esc(title)}</h2></div>`
+            return `<div class="ingredient-name ingredient-clickable" role="button" tabindex="0" onclick="clickIngredient(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();clickIngredient(event);}"><span class="ingredient-name-tag">成分 01</span><h2>${esc(title)}</h2></div>`
               + (rest ? `<div class="ingredient-card-body">${esc(rest)}</div>` : '');
           })()
         : `<div class="ingredient-empty">成分內容尚未建置，請將內容貼入程式碼中的 INGREDIENT_CONTENT。</div>`}

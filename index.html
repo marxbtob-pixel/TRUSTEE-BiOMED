@@ -651,6 +651,18 @@
     .logo-text .t1{white-space:normal; font-size:17px;}
   }
 
+  /* ===== 手機版導覽列：顯示「產品知識庫／客服知識庫／異議神助手」（僅手機，不影響電腦版）===== */
+  @media (max-width:768px){
+    .topbar-inner{flex-wrap:wrap; padding:12px 16px; row-gap:10px;}
+    .logo{flex:1 1 100%;}
+    .topbar-nav{display:flex; order:2; flex:1 1 100%; margin-left:0; gap:6px; flex-wrap:wrap;}
+    .topbar-nav-link{font-size:15px; padding:8px 12px;}
+    .topbar-right{display:contents;}
+    .topbar-right .topbar-search,
+    .topbar-right .badge-user{display:none;}
+    .objection-btn{order:3; font-size:15px; padding:8px 14px;}
+  }
+
   /* ===== 問題回報 懸浮按鈕 + Modal ===== */
   .report-fab{
     position:fixed; right:26px; bottom:26px; z-index:900;

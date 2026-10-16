@@ -83,6 +83,45 @@
   .objection-btn:hover{transform:translateY(-1px); box-shadow:0 4px 12px rgba(179,70,60,.45);}
   .objection-btn:active{transform:translateY(0);}
   .objection-btn.active{box-shadow:0 0 0 2px #fff, 0 0 0 4px #8F3530;}
+  .objection-btn.ingredient-btn{background:linear-gradient(135deg,#2E9C8A,#1F6F63); box-shadow:0 2px 8px rgba(31,111,99,.35);}
+  .objection-btn.ingredient-btn:hover{box-shadow:0 4px 12px rgba(31,111,99,.45);}
+  .objection-btn.ingredient-btn.active{box-shadow:0 0 0 2px #fff, 0 0 0 4px #1F6F63;}
+  .topbar-right{gap:12px;}
+  .topbar-right .topbar-search input{width:130px;}
+  .topbar-right .topbar-search input:focus{width:170px;}
+  .badge-user{white-space:nowrap;}
+  @media (min-width:769px){
+    .topbar-inner{padding-left:20px; padding-right:20px; gap:10px;}
+    .topbar-nav{margin-left:8px; gap:2px;}
+    .topbar-nav-link{padding:9px 10px;}
+    .topbar-right .badge-user span{display:none;}
+  }
+  @media (min-width:769px) and (max-width:1120px){
+    .topbar-inner{flex-wrap:wrap; row-gap:8px;}
+    .topbar-nav{flex:1 1 auto;}
+    .topbar-right{flex:1 1 100%; justify-content:flex-end;}
+  }
+  @media (min-width:1280px){
+    .topbar-inner{padding-left:28px; padding-right:28px;}
+    .topbar-right .badge-user span{display:inline;}
+  }
+
+  /* ===== 保養品成分解析 ===== */
+  .ingredient-card{
+    max-width:880px; margin:24px auto 40px; background:var(--surface); border:1px solid var(--border);
+    border-radius:18px; box-shadow:var(--shadow); padding:30px 34px; text-align:left;
+  }
+  .ingredient-name{display:flex; flex-direction:column; align-items:flex-start; gap:10px;}
+  .ingredient-name-tag{display:inline-block; padding:4px 12px; border-radius:99px; background:#E3F3EF; color:#1F6F63; font-size:12.5px; font-weight:700; letter-spacing:.08em;}
+  .ingredient-name h2{margin:0; font-family:'Noto Serif TC',serif; font-size:30px; line-height:1.35; color:var(--ink);}
+  .ingredient-name + .ingredient-card-body{margin-top:18px;}
+  .ingredient-clickable{cursor:pointer; border-radius:12px; transition:background .15s;}
+  .ingredient-clickable:hover{background:#F2F8F6;}
+  .ingredient-clickable:focus-visible{outline:2px solid #2E9C8A; outline-offset:4px;}
+  @media (max-width:640px){ .ingredient-name h2{font-size:24px;} }
+  .ingredient-card-body{white-space:pre-wrap; word-break:break-word; font-size:16.5px; line-height:1.9; color:var(--ink);}
+  .ingredient-empty{color:var(--muted); font-size:15px; line-height:1.8; text-align:center; padding:20px 0;}
+  @media (max-width:640px){ .ingredient-card{padding:20px 18px; border-radius:14px;} .ingredient-card-body{font-size:15.5px;} }
   .badge-user{
     display:flex; align-items:center; gap:8px;
     padding:6px 12px 6px 6px; border:1px solid var(--border); border-radius:99px; background:var(--surface);
@@ -661,6 +700,7 @@
     .topbar-right .topbar-search,
     .topbar-right .badge-user{display:none;}
     .objection-btn{order:3; font-size:15px; padding:8px 14px;}
+    .topbar-right .objection-btn.ingredient-btn{order:4;}
   }
 
   /* ===== 問題回報 懸浮按鈕 + Modal ===== */
@@ -724,7 +764,7 @@
 
   .report-toast{
     position:fixed; left:50%; bottom:30px; transform:translate(-50%, 20px); z-index:1100;
-    display:flex; align-items:center; gap:12px;
+    display:flex; align-items:center; gap:12px; width:max-content; max-width:calc(100vw - 32px);
     background:#1F6B41; color:#fff; padding:14px 18px 14px 26px; border-radius:99px; font-size:14.5px; font-weight:700;
     box-shadow:0 10px 24px rgba(0,0,0,.25); opacity:0; pointer-events:none; transition:opacity .25s, transform .25s;
   }
@@ -788,6 +828,7 @@
     </div>
     <div class="topbar-right">
       <button class="objection-btn" id="objectionBtn" onclick="goObjection()">🛡️ 異議神助手</button>
+      <button class="objection-btn ingredient-btn" id="ingredientBtn" onclick="goIngredient()">🧪 保養品成分解析</button>
       <div class="topbar-search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <input id="globalSearchInput" placeholder="搜尋客服 SOP 或產品…" onkeydown="if(event.key==='Enter') submitGlobalSearch()">
@@ -856,9 +897,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v1.6',
-  date: '2026-10-13',
-  notes: '新增「電銷／客服｜保養品必問」指引卡片、問題回報浮鈕、頂部導覽列切換自動捲回頂部'
+  version: 'v1.7',
+  date: '2026-10-16',
+  notes: '新增「好硒家」品牌與語音教案、「保養品成分解析」功能、手機版導覽列修正'
 };
 
 /* ======================================================================
@@ -2412,6 +2453,11 @@ function logSearchToGoogleForm(data){
     fields['entry.1369614496'] = data.csCategory || '';    // 客服查詢分類
     fields['entry.591856697'] = data.csQueryContent || '';  // 查詢內容（具體問題題目）
     pageHistory = '0,2';
+  } else if (data.category === '保養品成分解析') {
+    // 保養品成分解析：借用客服知識庫同一區段（第 3 區段）的「查詢內容」欄位
+    // 點擊功能按鈕時只帶「查詢類別」；點擊成分卡片時另帶「查詢內容」＝成分名稱
+    fields['entry.591856697'] = data.query || '';
+    pageHistory = '0,2';
   } else if (data.category === '異議神助手') {
     // 異議神助手相關欄位：借用客服知識庫同一區段的「客服查詢分類」「查詢內容」欄位
     // 客服查詢分類＝異議分類名稱（如：價格/預算/優惠）；查詢內容＝點擊的拒絕詞題目（如：太貴了/價格太高）
@@ -2494,8 +2540,46 @@ function submitGlobalSearch(){
   const val = document.getElementById('globalSearchInput').value.trim();
   goKnowledgeBase(val);
 }
+/* ---------- 保養品成分解析 ----------
+   ★ 請把完整成分文字貼進下方 INGREDIENT_CONTENT（反引號之間），系統會依原文換行與段落直接呈現 */
+const INGREDIENT_CONTENT = `麗珠蘭(PDRN) / 外泌體`;
+let __ingredientLogged = {};
+function goIngredient(){
+  state = {brandId:null, moduleId:null, view:'ingredient'};
+  __ingredientLogged = {};
+  logSearchToGoogleForm({ category: '保養品成分解析' });   // 點擊功能按鈕 → 查詢類別
+  render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+let __ingredientTitle = '';
+function clickIngredient(){
+  if(!__ingredientTitle || __ingredientLogged[__ingredientTitle]) return;   // 同一次進入頁面只記錄一次，避免重複點擊灌水
+  __ingredientLogged[__ingredientTitle] = true;
+  logSearchToGoogleForm({ category: '保養品成分解析', query: __ingredientTitle });   // 點擊成分 → 查詢內容
+}
+function renderIngredientPage(){
+  const text = (INGREDIENT_CONTENT || '').trim();
+  app.innerHTML = `
+    <div class="hero">
+      <span class="eyebrow">成分知識</span>
+      <h1>保養品成分解析</h1>
+    </div>
+    <div class="ingredient-card">
+      ${text
+        ? (()=>{
+            const nl = text.indexOf('\n');
+            const title = (nl === -1 ? text : text.slice(0, nl)).trim();
+            const rest = nl === -1 ? '' : text.slice(nl + 1).trim();
+            __ingredientTitle = title;
+            return `<div class="ingredient-name ingredient-clickable" role="button" tabindex="0" onclick="clickIngredient()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();clickIngredient();}"><span class="ingredient-name-tag">成分 01</span><h2>${esc(title)}</h2></div>`
+              + (rest ? `<div class="ingredient-card-body">${esc(rest)}</div>` : '');
+          })()
+        : `<div class="ingredient-empty">成分內容尚未建置，請將內容貼入程式碼中的 INGREDIENT_CONTENT。</div>`}
+    </div>
+  `;
+}
 function updateNavActive(id){
-  ['navHome','navEdu','navKB','objectionBtn'].forEach(nid=>{
+  ['navHome','navEdu','navKB','objectionBtn','ingredientBtn'].forEach(nid=>{
     const el = document.getElementById(nid);
     if(el) el.classList.toggle('active', nid===id);
   });
@@ -2508,6 +2592,10 @@ function renderBreadcrumb(){
   }
   if(state.view==='objection'){
     crumbEl.innerHTML = `<span class="crumb" onclick="goHome()">首頁</span><span class="sep">/</span><span class="current">異議神助手</span>`;
+    return;
+  }
+  if(state.view==='ingredient'){
+    crumbEl.innerHTML = `<span class="crumb" onclick="goHome()">首頁</span><span class="sep">/</span><span class="current">保養品成分解析</span>`;
     return;
   }
   let parts = [`<span class="crumb" onclick="goHome()">首頁</span>`];
@@ -2530,6 +2618,7 @@ function render(){
   renderBreadcrumb();
   if(state.view==='kb'){ updateNavActive('navKB'); renderKnowledgeBasePage(); return; }
   if(state.view==='objection'){ updateNavActive('objectionBtn'); renderObjectionPage(); return; }
+  if(state.view==='ingredient'){ updateNavActive('ingredientBtn'); renderIngredientPage(); return; }
   if(!state.brandId){ updateNavActive('navHome'); renderHome(); return; }
   updateNavActive(null);
   if(!state.moduleId){ renderBrandPage(getBrand(state.brandId)); return; }

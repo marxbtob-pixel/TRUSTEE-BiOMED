@@ -112,6 +112,37 @@
   .ingredient-clickable:focus-visible{outline:2px solid #2E9C8A; outline-offset:4px;}
   @media (max-width:640px){ .ingredient-name h2{font-size:24px;} }
   .ingredient-card-body{white-space:pre-wrap; word-break:break-word; font-size:16.5px; line-height:1.9; color:var(--ink);}
+  .ingredient-section{margin-top:26px;}
+  .ingredient-section h3{margin:0 0 12px; font-size:18px; font-weight:700; color:#1F6F63; display:flex; align-items:center; gap:8px;}
+  .ingredient-section h3::before{content:''; width:8px; height:8px; border-radius:50%; background:#2E9C8A; flex-shrink:0;}
+  .ingredient-section p{margin:0; font-size:16.5px; line-height:1.9; color:var(--ink);}
+  .ingredient-table-wrap{overflow-x:auto; border:1px solid var(--border); border-radius:12px;}
+  .ingredient-table{width:100%; border-collapse:collapse; font-size:15.5px; line-height:1.7; min-width:520px;}
+  .ingredient-table th, .ingredient-table td{padding:12px 14px; text-align:left; vertical-align:top; border-bottom:1px solid var(--border);}
+  .ingredient-table thead th{background:#E3F3EF; color:#1F6F63; font-weight:700; white-space:nowrap;}
+  .ingredient-table tbody th{background:#F6FAF9; font-weight:700; white-space:nowrap; width:1%;}
+  .ingredient-table tbody tr:last-child th, .ingredient-table tbody tr:last-child td{border-bottom:none;}
+  .ingredient-effects{list-style:none; margin:0; padding:0; display:grid; gap:12px; counter-reset:eff;}
+  .ingredient-effects li{counter-increment:eff; position:relative; padding:14px 16px 14px 56px; background:#F6FAF9; border:1px solid var(--border); border-radius:12px; display:flex; flex-direction:column; gap:4px;}
+  .ingredient-effects li::before{content:counter(eff); position:absolute; left:16px; top:14px; width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#2E9C8A,#2D6A5D); color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;}
+  .ingredient-effect-title{font-weight:700; font-size:16.5px; color:var(--ink);}
+  .ingredient-effect-desc{font-size:15.5px; line-height:1.75; color:var(--ink);}
+  @media (max-width:640px){ .ingredient-section p{font-size:15.5px;} .ingredient-table{font-size:14px; min-width:0;} .ingredient-table th, .ingredient-table td{padding:10px 8px;} .ingredient-table tbody th{white-space:normal; width:auto; min-width:3.2em;} .ingredient-table thead th{white-space:normal;} .ingredient-effects li{padding:12px 12px 12px 50px;} .ingredient-effects li::before{left:12px; top:12px;} }
+  .ingredient-note{margin-top:14px; padding:10px 14px; border-radius:10px; background:#FFF4E5; border:1px solid #F2D2A0; color:#8A5A12; font-weight:700; font-size:15.5px;}
+  .ingredient-lead{margin:0 0 12px !important; font-weight:600;}
+  .ingredient-summary{margin-top:24px; padding:16px 18px; border-radius:12px; background:#E3F3EF; color:#1F6F63; font-size:16px; line-height:1.85; font-weight:600;}
+  .ingredient-list{max-width:880px; margin:24px auto 40px; display:grid; gap:18px;}
+  .ingredient-list .ingredient-card{margin:0; width:100%;}
+  .ingredient-list-card{cursor:pointer; display:flex; flex-direction:column; align-items:flex-start; gap:10px; transition:transform .15s, box-shadow .15s, border-color .15s;}
+  .ingredient-list-card:hover{transform:translateY(-2px); border-color:#2E9C8A; box-shadow:0 10px 24px rgba(45,106,93,.18);}
+  .ingredient-list-card:focus-visible{outline:2px solid #2E9C8A; outline-offset:3px;}
+  .ingredient-list-card h2{margin:0; font-family:'Noto Serif TC',serif; font-size:28px; line-height:1.35; color:var(--ink);}
+  .ingredient-subtitle{margin:0; font-size:16.5px; line-height:1.7; color:var(--muted);}
+  .ingredient-cta{align-self:flex-end; margin-top:6px; padding:9px 18px; border-radius:99px; background:linear-gradient(135deg,#2E9C8A,#2D6A5D); color:#fff; font-weight:700; font-size:15px; box-shadow:0 2px 8px rgba(45,106,93,.3);}
+  .ingredient-list-card:hover .ingredient-cta{filter:brightness(1.12);}
+  .ingredient-back{display:inline-flex; align-items:center; gap:6px; margin-bottom:18px; padding:8px 16px; border-radius:99px; border:1px solid #2D6A5D; background:#fff; color:#2D6A5D; font-size:15px; font-weight:700; cursor:pointer; transition:background .15s;}
+  .ingredient-back:hover{background:#E3F3EF;}
+  @media (max-width:640px){ .ingredient-list-card h2{font-size:23px;} .ingredient-subtitle{font-size:15.5px;} }
   .ingredient-empty{color:var(--muted); font-size:15px; line-height:1.8; text-align:center; padding:20px 0;}
   @media (max-width:640px){ .ingredient-card{padding:20px 18px; border-radius:14px;} .ingredient-card-body{font-size:15.5px;} }
   .badge-user{
@@ -886,9 +917,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v1.9',
+  version: 'v2.2',
   date: '2026-10-16',
-  notes: '頂部四個導覽按鈕統一為綠色膠囊樣式並加上圖示'
+  notes: '保養品成分解析改為兩階段：先看成分卡片列表，點擊後展開完整解析並可返回列表'
 };
 
 /* ======================================================================
@@ -2530,42 +2561,103 @@ function submitGlobalSearch(){
   goKnowledgeBase(val);
 }
 /* ---------- 保養品成分解析 ----------
-   ★ 請把完整成分文字貼進下方 INGREDIENT_CONTENT（反引號之間），系統會依原文換行與段落直接呈現 */
-const INGREDIENT_CONTENT = `麗珠蘭(PDRN) / 外泌體`;
-let __ingredientLogged = {};
+   ★ 新增成分：在 INGREDIENTS 陣列加一筆即可（title／intro／table／effects），卡片編號自動遞增 */
+const INGREDIENTS = [
+  {
+    title: '麗珠蘭(PDRN/PN)',
+    subtitle: '韓國明星級水光保養成分（PDRN / PN 雙核心）',
+    intro: 'Rejuran 麗珠蘭是來自韓國的醫美新星，其 2 大核心成分 PDRN（聚去氧核糖核苷酸）、PN（多核苷酸）提取自野生洄游鮭魚的 DNA 片段。由於鮭魚 DNA 和人體 DNA 高度相似，具有良好的生物相容性，是水光產品中的佼佼者，因此有了「愛馬仕水光針」的別稱。可視個人需求和肌膚狀況，搭配雷射、導入、微針電波等方式進行，以發揮更全面的保養效果。',
+    note: '目前台灣尚未核准注射型產品上市',
+    tableTitle: 'PDRN vs PN 核心成分對照表（Rejuran 麗珠蘭水光針 2 大成分）',
+    table: {
+      head: ['比較項目', 'PDRN（聚去氧核糖核苷酸）', 'PN（多核苷酸）'],
+      rows: [
+        ['成分來源', '野生鮭魚生殖細胞（精子）', '野生鮭魚生殖細胞（精囊）'],
+        ['結構組成', '短鏈 DNA（短核苷酸鏈）\n2D 平面結構', '長鏈 DNA（長核苷酸鏈）\n3D 雙股螺旋結構'],
+        ['分子量', '較小，350kDa', '較大，> 1000kDa'],
+        ['使用方式', '外敷塗抹，可搭配雷射、導入、微針電波', '皮下注射'],
+        ['適用部位', '肌膚淺層', '肌膚深層'],
+        ['成分作用', '促進表層膚質調理，提升保濕度', '具良好支持皮膚的結構效果，改善肌膚彈性'],
+      ],
+    },
+    effectsTitle: 'PDRN 4 大修復與增生功效',
+    effectsLead: 'PDRN 在醫美領域最知名的效果就是「修復力與增生力」。',
+    effects: [
+      ['促進細胞增生', 'PDRN 能刺激成纖維細胞生長，幫助肌膚生成膠原蛋白與彈力蛋白，使肌膚更緊緻、更有彈性。'],
+      ['修復受損肌膚屏障', '對於乾燥、敏感、泛紅肌膚，PDRN 能快速降低刺激，強化屏障功能，改善肌膚耐受度。'],
+      ['提升保濕力與光澤感', '與玻尿酸搭配後的 PDRN 療程，如麗珠蘭 Skin Booster，能提升肌膚含水量，讓肌膚看起來更加水嫩有光澤。'],
+      ['淡化痘疤與細紋', 'PDRN 具有良好的修復能力，能針對痘痘肌、老化肌膚產生明顯改善，特別在縮小毛孔與淡化暗沉方面表現出色。'],
+    ],
+    summary: '總結來說，PDRN 不是只「填補」問題，而是啟動肌膚自我改善修復機制，這也使它成為許多皮膚科醫師推薦的肌膚修復成分之一。',
+  },
+];
+let __ingredientOpen = null;   // null＝成分卡片列表（第一階段）；數字＝正在檢視的成分索引（第二階段）
 function goIngredient(){
   state = {brandId:null, moduleId:null, view:'ingredient'};
-  __ingredientLogged = {};
-  // 進入頁面（點擊頂部按鈕）不送出紀錄，只在點擊成分卡片時送出一筆完整紀錄（見 clickIngredient）
+  __ingredientOpen = null;
+  // 進入頁面（點擊頂部按鈕）不送出紀錄，只在點開成分卡片時送出一筆完整紀錄（見 openIngredient）
   render();
   window.scrollTo({ top: 0, behavior: 'instant' });
 }
-let __ingredientTitle = '';
-function clickIngredient(e){
+function openIngredient(idx, e){
   if(e && e.stopPropagation) e.stopPropagation();   // 避免事件冒泡觸發其他點擊紀錄
-  if(!__ingredientTitle || __ingredientLogged[__ingredientTitle]) return;   // 同一次進入頁面只記錄一次，避免重複點擊灌水
-  __ingredientLogged[__ingredientTitle] = true;
-  logSearchToGoogleForm({ category: '保養品成分解析', query: __ingredientTitle });   // 點擊成分 → 查詢內容
+  const item = INGREDIENTS[idx];
+  if(!item) return;
+  __ingredientOpen = idx;
+  logSearchToGoogleForm({ category: '保養品成分解析', query: item.title });   // 點開成分卡片 → 查詢內容（每次開啟只送一筆）
+  renderIngredientPage();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+function backToIngredientList(){
+  __ingredientOpen = null;
+  renderIngredientPage();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+function ingredientListCardHTML(it, idx){
+  const num = String(idx + 1).padStart(2, '0');
+  return `
+    <div class="ingredient-card ingredient-list-card" role="button" tabindex="0" onclick="openIngredient(${idx}, event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openIngredient(${idx}, event);}">
+      <span class="ingredient-name-tag">成分 ${num}</span>
+      <h2>${esc(it.title)}</h2>
+      ${it.subtitle ? `<p class="ingredient-subtitle">${esc(it.subtitle)}</p>` : ''}
+      <div class="ingredient-cta">查看完整解析 ➔</div>
+    </div>`;
+}
+function ingredientCardHTML(it, idx){
+  const num = String(idx + 1).padStart(2, '0');
+  return `
+    <div class="ingredient-card">
+      <button type="button" class="ingredient-back" onclick="backToIngredientList()">⬅️ 返回成分列表</button>
+      <div class="ingredient-name">
+        <span class="ingredient-name-tag">成分 ${num}</span>
+        <h2>${esc(it.title)}</h2>
+      </div>
+      ${it.intro ? `<div class="ingredient-section"><h3>產品簡介</h3><p>${esc(it.intro)}</p>${it.note ? `<div class="ingredient-note">⚠️ ${esc(it.note)}</div>` : ''}</div>` : ''}
+      ${it.table ? `<div class="ingredient-section"><h3>${esc(it.tableTitle || '對照表')}</h3>
+        <div class="ingredient-table-wrap"><table class="ingredient-table">
+          <thead><tr>${it.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead>
+          <tbody>${it.table.rows.map(r=>`<tr>${r.map((c,i)=>i===0?`<th scope="row">${esc(c)}</th>`:`<td>${esc(c).replace(/\n/g,'<br>')}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table></div></div>` : ''}
+      ${it.effects && it.effects.length ? `<div class="ingredient-section"><h3>${esc(it.effectsTitle || '功效')}</h3>
+        ${it.effectsLead ? `<p class="ingredient-lead">${esc(it.effectsLead)}</p>` : ''}<ol class="ingredient-effects">${it.effects.map(([t,d])=>`<li><span class="ingredient-effect-title">${esc(t)}</span><span class="ingredient-effect-desc">${esc(d)}</span></li>`).join('')}</ol></div>` : ''}
+      ${it.summary ? `<div class="ingredient-summary">${esc(it.summary)}</div>` : ''}
+    </div>`;
 }
 function renderIngredientPage(){
-  const text = (INGREDIENT_CONTENT || '').trim();
+  let body;
+  if(__ingredientOpen !== null && INGREDIENTS[__ingredientOpen]){
+    body = ingredientCardHTML(INGREDIENTS[__ingredientOpen], __ingredientOpen);
+  } else if(INGREDIENTS.length){
+    body = `<div class="ingredient-list">${INGREDIENTS.map(ingredientListCardHTML).join('')}</div>`;
+  } else {
+    body = `<div class="ingredient-card"><div class="ingredient-empty">成分內容尚未建置。</div></div>`;
+  }
   app.innerHTML = `
     <div class="hero">
       <span class="eyebrow">成分知識</span>
       <h1>保養品成分解析</h1>
     </div>
-    <div class="ingredient-card">
-      ${text
-        ? (()=>{
-            const nl = text.indexOf('\n');
-            const title = (nl === -1 ? text : text.slice(0, nl)).trim();
-            const rest = nl === -1 ? '' : text.slice(nl + 1).trim();
-            __ingredientTitle = title;
-            return `<div class="ingredient-name ingredient-clickable" role="button" tabindex="0" onclick="clickIngredient(event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();clickIngredient(event);}"><span class="ingredient-name-tag">成分 01</span><h2>${esc(title)}</h2></div>`
-              + (rest ? `<div class="ingredient-card-body">${esc(rest)}</div>` : '');
-          })()
-        : `<div class="ingredient-empty">成分內容尚未建置，請將內容貼入程式碼中的 INGREDIENT_CONTENT。</div>`}
-    </div>
+    ${body}
   `;
 }
 function updateNavActive(id){

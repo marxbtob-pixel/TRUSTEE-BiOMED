@@ -537,6 +537,14 @@
   }
   .btn-primary:disabled{opacity:.4; cursor:not-allowed;}
 
+  .eval-std-title{margin:0 0 14px; font-size:20px; color:var(--ink);}
+  .eval-std-wrap{overflow-x:auto;}
+  .eval-std-table{width:100%; border-collapse:collapse; font-size:15px;}
+  .eval-std-table th,.eval-std-table td{padding:12px 14px; border-bottom:1px solid var(--border); text-align:left;}
+  .eval-std-table thead th{background:var(--band-color,var(--brand)); color:#fff; font-weight:600; white-space:nowrap;}
+  .eval-std-table .eval-std-star{text-align:center; width:72px; color:#E0A100; font-size:18px;}
+  .eval-std-table thead .eval-std-star{color:#fff; font-size:15px;}
+  .eval-std-notes{margin-top:16px; padding:14px 16px; border-radius:var(--radius-sm); background:#FFF8E6; border:1px solid #F2DFA6; font-weight:600; line-height:1.9;}
   .eval-list{display:flex; flex-direction:column; gap:10px;}
   .eval-item{
     display:flex; align-items:center; justify-content:space-between; padding:14px 16px;
@@ -917,9 +925,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v2.3',
+  version: 'v2.4',
   date: '2026-10-21',
-  notes: '異議神助手：移除「已有產品/不想增加」中的「我平常都不擦保養品」'
+  notes: 'BFFECT 考核頁新增「BFFECT 考核標準」（題目、4/5 星要求、考核規則）'
 };
 
 /* ======================================================================
@@ -1600,6 +1608,21 @@ const BRANDS = [
   },
   {
     id:'bffect', name:'BFFECT', tag:'皮膚專科醫師親研精華',
+    evalStandard:{
+      title:'BFFECT 考核標準',
+      cols:['4 星','5 星'],
+      rows:[
+        ['膚質有分哪幾型？各膚質特徵（優缺點）為何？',1,1],
+        ['簡述毛孔粗大的原因及毛孔粗大的類型？',1,1],
+        ['保養品分哪些系列及販售哪些品項？',1,1],
+        ['所有精華液使用順序？',1,1],
+        ['各系列商品適用膚質？',1,1],
+        ['哪些商品不建議孕期使用？',1,1],
+        ['哪些商品不建議敏弱肌使用？',1,1],
+        ['常見 Q&A',0,1]
+      ],
+      notes:['可翻資料（在自己座位線上考核）','需在 30 分鐘內完成考核']
+    },
     color:'#ACA9A2',
     desc:'由皮膚專科醫師親自研製的單一功效精華系列，主打精簡成分、高濃度有效物，依膚況對症選用。',
     website:{ tw:'https://www.trusteebio.com.tw/categories/bffect-皮膚專科醫師親研精華' },
@@ -5259,6 +5282,24 @@ function renderEval(b){
     {name:'產品實作考核', desc:'產品使用示範與步驟講解', status:'待複核'},
   ];
   const body = document.getElementById('moduleBody');
+  if(b.evalStandard){
+    const es = b.evalStandard;
+    body.innerHTML = `
+      <div class="panel">
+        <h3 class="eval-std-title">${esc(es.title)}</h3>
+        <div class="eval-std-wrap">
+          <table class="eval-std-table">
+            <thead><tr><th>題目</th>${es.cols.map(c=>`<th class="eval-std-star">${esc(c)}</th>`).join('')}</tr></thead>
+            <tbody>
+              ${es.rows.map((r,i)=>`<tr><td>${i+1}. ${esc(r[0])}</td>${r.slice(1).map(v=>`<td class="eval-std-star">${v?'★':''}</td>`).join('')}</tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="eval-std-notes">${es.notes.map(n=>`<div>📌 ${esc(n)}</div>`).join('')}</div>
+      </div>
+    `;
+    return;
+  }
   body.innerHTML = `
     <div class="panel">
       <div class="hint-box">模板說明：狀態與名稱為示意資料，請串接實際考核紀錄系統。</div>

@@ -188,7 +188,7 @@
   }
   .ingredient-grid{max-width:880px; margin:24px auto 40px;}
   .ingredient-grid-card{display:flex; flex-direction:column;}
-  .ingredient-grid-card .go{margin-top:auto; padding-top:16px;}
+  .brand-card.ingredient-grid-card .go{margin-top:auto; padding-top:16px;}
   .ingredient-grid-card:focus-visible{outline:2px solid #2E9C8A; outline-offset:3px;}
   .ingredient-list{max-width:880px; margin:24px auto 40px; display:grid; gap:18px;}
   .ingredient-list .ingredient-card{margin:0; width:100%;}
@@ -985,9 +985,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v3.0',
+  version: 'v3.1',
   date: '2026-10-27',
-  notes: '常見肌膚疾病新增「脂漏性皮膚炎」解析（依 docx 內容）'
+  notes: '常見肌膚疾病新增「敏感性膚質」「過敏性皮膚炎」並置於前兩張，原有疾病編號順延'
 };
 
 /* ======================================================================
@@ -2734,6 +2734,22 @@ const INGREDIENTS = [
 ];
 let __ingredientOpen = null;   // null＝成分卡片列表（第一階段）；數字＝正在檢視的成分索引（第二階段）
 const SKIN_CONDITIONS = [
+  {
+    title: '敏感性膚質 (Sensitive Skin)',
+    logName: '敏感性膚質',
+    subtitle: '皮膚容易因外在刺激而不適的膚質狀態',
+    brief: '容易因溫度、濕度、風吹或觸碰，或接觸保養品及化妝品成份而出現刺痛、搔癢、發紅等症狀。',
+    overviewTitle: '解析內容',
+    overview: '指的是皮膚很容易因為環境的溫度、濕度、風吹或觸碰等物理性因素，或是接觸保養品及化妝品的某些成份（非特定化學成份），而產生刺痛、搔癢、灼熱、皮膚變粗、脫屑、發紅、緊繃等症狀。'
+  },
+  {
+    title: '過敏性皮膚炎 (Allergic Contact Dermatitis)',
+    logName: '過敏性皮膚炎',
+    subtitle: '接觸性皮膚炎的一種，對特定成份產生反應',
+    brief: '對保養品中常見的香料、防腐劑或其他化學成份產生紅、腫、發癢、起丘疹，甚至脫皮等反應。',
+    overviewTitle: '解析內容',
+    overview: '則是接觸性皮膚炎的一種，指的是皮膚對於某些特定成份，例如保養品中最常見的香料、防腐劑或其他化學成份等，會產生紅、腫、發癢、起丘疹，甚至脫皮等反應。'
+  },
   {
     title: '異位性皮膚炎 (Atopic Dermatitis)',
     logName: '異位性皮膚炎',   // 送出 Google 表單的「查詢內容」

@@ -88,13 +88,15 @@
     .topbar-nav-link, .objection-btn{padding:9px 12px; font-size:14px;}
     .topbar-right .badge-user span{display:none;}
   }
-  @media (min-width:769px) and (max-width:1120px){
+  @media (min-width:769px) and (max-width:1399px){
     .topbar-inner{flex-wrap:wrap; row-gap:8px;}
     .topbar-nav{flex:1 1 auto;}
     .topbar-right{flex:1 1 100%; justify-content:flex-end;}
   }
   @media (min-width:1280px){
     .topbar-inner{padding-left:28px; padding-right:28px;}
+  }
+  @media (min-width:1600px){
     .topbar-right .badge-user span{display:inline;}
   }
 
@@ -158,6 +160,32 @@
   .ingredient-extra-panel .ingredient-table-wrap{background:#fff;}
   .ingredient-extra-panel .ingredient-empty{padding:6px 0; margin:0;}
   @media (max-width:640px){ .ingredient-extras-btns{grid-template-columns:1fr;} }
+  .skin-cycle{list-style:none; margin:0; padding:0; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:30px 34px;}
+  .skin-step{position:relative; display:flex; align-items:center; gap:10px; padding:12px 14px; background:#F6FAF9; border:1px solid var(--border); border-radius:12px; min-width:0;}
+  .skin-step:not(:last-child)::after{content:'→'; position:absolute; right:-27px; top:50%; transform:translateY(-50%); color:#2D6A5D; font-weight:700; font-size:20px;}
+  .skin-step:nth-child(3)::after{content:'↓'; right:auto; left:50%; top:auto; bottom:-27px; transform:translateX(-50%);}
+  .skin-step:nth-child(4){grid-column:3; grid-row:2;}
+  .skin-step:nth-child(5){grid-column:2; grid-row:2;}
+  .skin-step:nth-child(6){grid-column:1; grid-row:2;}
+  .skin-step:nth-child(4)::after, .skin-step:nth-child(5)::after{content:'←'; right:auto; left:-27px;}
+  .skin-step-no{flex:0 0 auto; width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#2E9C8A,#2D6A5D); color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center;}
+  .skin-step-text{font-weight:600; line-height:1.5; color:var(--ink);}
+  .skin-step-last{background:#FDEEEA; border-color:#F2C4B8;}
+  .skin-step-last .skin-step-no{background:linear-gradient(135deg,#E2765B,#C2492F);}
+  .skin-loop{margin-top:14px; padding:10px 14px; border-radius:10px; background:#FFF8E6; border:1px dashed #E3C777; color:#8A6A12; font-weight:700; text-align:center;}
+  .skin-keys{display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px;}
+  .skin-key{flex:1 1 160px; display:flex; align-items:center; justify-content:center; gap:8px; padding:16px 14px; border-radius:14px; background:linear-gradient(135deg,#2E9C8A,#2D6A5D); color:#fff; font-weight:700; font-size:17px; box-shadow:0 2px 8px rgba(45,106,93,.3);}
+  .skin-key-ic{font-size:22px;}
+  .skin-key-plus{color:#2D6A5D; font-size:22px; font-weight:700;}
+  @media (max-width:640px){
+    .skin-cycle{grid-template-columns:1fr; gap:30px;}
+    .skin-step:nth-child(n){grid-column:auto; grid-row:auto;}
+    .skin-step:nth-child(n):not(:last-child)::after{content:'↓'; left:50%; right:auto; top:auto; bottom:-27px; transform:translateX(-50%);}
+    .skin-step:not(:last-child)::after{content:'↓'; right:auto; left:50%; top:auto; bottom:-27px; transform:translateX(-50%);}
+    .skin-keys{flex-direction:column; align-items:stretch;}
+    .skin-key{flex:0 0 auto;}
+    .skin-key-plus{text-align:center;}
+  }
   .ingredient-grid{max-width:880px; margin:24px auto 40px;}
   .ingredient-grid-card{display:flex; flex-direction:column;}
   .ingredient-grid-card .go{margin-top:auto; padding-top:16px;}
@@ -888,6 +916,7 @@
     <div class="topbar-right">
       <button class="objection-btn" id="objectionBtn" onclick="goObjection()">🛡️ 異議神助手</button>
       <button class="objection-btn ingredient-btn" id="ingredientBtn" onclick="goIngredient()">🧪 保養品成分解析</button>
+      <button class="objection-btn" id="skinConditionBtn" onclick="goSkinCondition()">🩺 常見肌膚疾病</button>
       <div class="topbar-search">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         <input id="globalSearchInput" placeholder="搜尋客服 SOP 或產品…" onkeydown="if(event.key==='Enter') submitGlobalSearch()">
@@ -956,9 +985,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v2.5',
-  date: '2026-10-23',
-  notes: '麗珠蘭解析頁新增「與其它相似產品比較」按鈕（與外泌體共用同一份比較表與重點說明）'
+  version: 'v2.8',
+  date: '2026-10-27',
+  notes: '常見肌膚疾病改為兩階段：先看疾病卡片列表，點擊後展開解析並可返回列表'
 };
 
 /* ======================================================================
@@ -2704,6 +2733,89 @@ const INGREDIENTS = [
   }
 ];
 let __ingredientOpen = null;   // null＝成分卡片列表（第一階段）；數字＝正在檢視的成分索引（第二階段）
+const SKIN_CONDITIONS = [
+  {
+    title: '異位性皮膚炎 (Atopic Dermatitis)',
+    subtitle: '慢性、反覆發作的過敏性皮膚疾病',
+    brief: '主要特徵是皮膚乾燥、劇烈搔癢及反覆發炎，容易陷入「癢→抓→更癢」的惡性循環。',
+    overviewTitle: '疾病概述',
+    overview: '異位性皮膚炎是一種慢性、反覆發作的過敏性皮膚疾病，主要特徵是皮膚乾燥、劇烈搔癢及反覆發炎。除了皮膚症狀外，許多患者日後也可能陸續出現過敏性鼻炎、氣喘等過敏疾病。',
+    cycleTitle: '惡性循環機制',
+    cycleLead: '異膚會一直反覆發作，形成惡性循環：',
+    cycle: ['癢', '抓', '皮膚受損、滲液或出血', '長期發炎造成皮膚變厚、粗糙、乾裂', '皮膚屏障受損，更容易受到刺激而反覆發作', '更癢'],
+    cycleLoop: '「更癢」之後又回到「抓」，循環不斷重複',
+    keyTitle: '改善關鍵重點',
+    keyLead: '改善關鍵是「修復皮膚屏障 ＋ 調節免疫 ＋ 控制發炎」',
+    keys: [['🧱','修復皮膚屏障'], ['🛡️','調節免疫'], ['🔥','控制發炎']]
+  }
+];
+function skinConditionHTML(it, idx){
+  return `
+    <div class="ingredient-card skin-card">
+      <button type="button" class="ingredient-back" onclick="backToSkinList()">⬅️ 返回疾病列表</button>
+      <div class="ingredient-name">
+        <span class="ingredient-name-tag">肌膚疾病 ${String(idx + 1).padStart(2, '0')}</span>
+        <h2>${esc(it.title)}</h2>
+      </div>
+      <div class="ingredient-section"><h3>${esc(it.overviewTitle)}</h3><p>${esc(it.overview)}</p></div>
+      <div class="ingredient-section">
+        <h3>${esc(it.cycleTitle)}</h3>
+        <p class="ingredient-lead">${esc(it.cycleLead)}</p>
+        <ol class="skin-cycle">
+          ${it.cycle.map((t,i)=>`<li class="skin-step${i===it.cycle.length-1?' skin-step-last':''}"><span class="skin-step-no">${i+1}</span><span class="skin-step-text">${esc(t)}</span></li>`).join('')}
+        </ol>
+        <div class="skin-loop">↺ ${esc(it.cycleLoop)}</div>
+      </div>
+      <div class="ingredient-section">
+        <h3>${esc(it.keyTitle)}</h3>
+        <p class="ingredient-lead">${esc(it.keyLead)}</p>
+        <div class="skin-keys">
+          ${it.keys.map(([ic,t],i)=>`<div class="skin-key"><span class="skin-key-ic">${ic}</span><span>${esc(t)}</span></div>${i<it.keys.length-1?'<span class="skin-key-plus">＋</span>':''}`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+let __skinOpen = null;   // null＝疾病卡片列表；數字＝正在檢視的疾病索引
+function openSkinCondition(idx, e){
+  if(e && e.stopPropagation) e.stopPropagation();
+  if(!SKIN_CONDITIONS[idx]) return;
+  __skinOpen = idx;
+  renderSkinConditionPage();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+function backToSkinList(){
+  __skinOpen = null;
+  renderSkinConditionPage();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+function skinListCardHTML(it, idx){
+  return `
+    <div class="brand-card ingredient-grid-card" style="--card-color:#2E9C8A" role="button" tabindex="0" onclick="openSkinCondition(${idx}, event)" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSkinCondition(${idx}, event);}">
+      <span class="bnum">肌膚疾病 ${String(idx + 1).padStart(2, '0')}</span>
+      <h3>${esc(it.title)}</h3>
+      ${it.subtitle ? `<div class="btag">${esc(it.subtitle)}</div>` : ''}
+      ${it.brief ? `<p>${esc(it.brief)}</p>` : ''}
+      <div class="go">查看完整解析 ${ICONS.arrow}</div>
+    </div>`;
+}
+function renderSkinConditionPage(){
+  const body = (__skinOpen !== null && SKIN_CONDITIONS[__skinOpen])
+    ? skinConditionHTML(SKIN_CONDITIONS[__skinOpen], __skinOpen)
+    : `<div class="brand-grid ingredient-grid">${SKIN_CONDITIONS.map(skinListCardHTML).join('')}</div>`;
+  app.innerHTML = `
+    <div class="hero">
+      <span class="eyebrow">肌膚知識</span>
+      <h1>常見肌膚疾病</h1>
+    </div>
+    ${body}
+  `;
+}
+function goSkinCondition(){
+  state = {brandId:null, moduleId:null, view:'skin'};
+  __skinOpen = null;
+  render();
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
 function goIngredient(){
   state = {brandId:null, moduleId:null, view:'ingredient'};
   __ingredientOpen = null;
@@ -2798,7 +2910,7 @@ function renderIngredientPage(){
   `;
 }
 function updateNavActive(id){
-  ['navHome','navEdu','navKB','objectionBtn','ingredientBtn'].forEach(nid=>{
+  ['navHome','navEdu','navKB','objectionBtn','ingredientBtn','skinConditionBtn'].forEach(nid=>{
     const el = document.getElementById(nid);
     if(el) el.classList.toggle('active', nid===id);
   });
@@ -2811,6 +2923,10 @@ function renderBreadcrumb(){
   }
   if(state.view==='objection'){
     crumbEl.innerHTML = `<span class="crumb" onclick="goHome()">首頁</span><span class="sep">/</span><span class="current">異議神助手</span>`;
+    return;
+  }
+  if(state.view==='skin'){
+    crumbEl.innerHTML = `<span class="crumb" onclick="goHome()">首頁</span><span class="sep">/</span><span class="current">常見肌膚疾病</span>`;
     return;
   }
   if(state.view==='ingredient'){
@@ -2838,6 +2954,7 @@ function render(){
   if(state.view==='kb'){ updateNavActive('navKB'); renderKnowledgeBasePage(); return; }
   if(state.view==='objection'){ updateNavActive('objectionBtn'); renderObjectionPage(); return; }
   if(state.view==='ingredient'){ updateNavActive('ingredientBtn'); renderIngredientPage(); return; }
+  if(state.view==='skin'){ updateNavActive('skinConditionBtn'); renderSkinConditionPage(); return; }
   if(!state.brandId){ updateNavActive('navHome'); renderHome(); return; }
   updateNavActive(null);
   if(!state.moduleId){ renderBrandPage(getBrand(state.brandId)); return; }

@@ -985,9 +985,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v2.9',
+  version: 'v3.0',
   date: '2026-10-27',
-  notes: '常見肌膚疾病：點擊疾病卡片時送出 Google 表單紀錄（查詢類別＋疾病名稱）'
+  notes: '常見肌膚疾病新增「脂漏性皮膚炎」解析（依 docx 內容）'
 };
 
 /* ======================================================================
@@ -2748,6 +2748,41 @@ const SKIN_CONDITIONS = [
     keyTitle: '改善關鍵重點',
     keyLead: '改善關鍵是「修復皮膚屏障 ＋ 調節免疫 ＋ 控制發炎」',
     keys: [['🧱','修復皮膚屏障'], ['🛡️','調節免疫'], ['🔥','控制發炎']]
+  },
+  {
+    title: '脂漏性皮膚炎 (Seborrheic Dermatitis)',
+    logName: '脂漏性皮膚炎',
+    subtitle: '與皮脂分泌旺盛、皮屑芽孢菌相關的慢性發炎皮膚病',
+    brief: '屬於非感染性的反覆發炎狀態，好發於頭皮、臉部與身體皮脂腺旺盛處。',
+    overviewTitle: '一. 認識脂漏性皮膚炎',
+    overview: '脂漏性皮膚炎是一種與皮脂分泌旺盛、皮屑芽孢菌增生及個人免疫反應相關的慢性發炎皮膚病，屬於非感染性的反覆發炎狀態',
+    sections: [
+      {title:'二. 好發部位', items:[
+        '頭皮（最常見，伴隨頭皮屑或厚痂）',
+        '臉部（眉毛、鼻翼兩側、鼻唇溝、耳朵前後、外耳道）',
+        '身體上半部（前胸、上背部、腋下、腹股溝、乳房下方等皮脂腺旺盛或容易出油、悶熱的皺褶處）'
+      ]},
+      {title:'三. 常見症狀', items:[
+        ['紅斑與脫屑','皮膚出現黃紅色斑塊，表面覆蓋油膩性的白色或黃色鱗屑。'],
+        ['發癢或灼熱感','患處常伴隨輕微到中度的搔癢感。'],
+        ['嬰兒型態','常見於出生數週的嬰兒頭頂，俗稱「乳痂」（黃褐色厚結痂）。']
+      ]},
+      {title:'四. 常見誘發與惡化因素', items:[
+        '皮屑芽孢菌（Malassezia）過度增生',
+        '生活壓力與情緒緊張',
+        '睡眠不足、熬夜或作息不正常',
+        '氣候變化（溫熱潮濕的夏季或寒冷乾燥的冬季均可能影響）',
+        '飲食習慣（嗜吃辛辣、油膩食物或飲酒）'
+      ]},
+      {title:'五. 日常保養與治療重點', items:[
+        ['生活調節','保持作息規律、睡眠充足、放鬆心情，有助於減少復發頻率。'],
+        ['藥物治療','急性發作時，可依皮膚科醫師指示短期使用局部外用類固醇或非類固醇抗發炎藥膏。'],
+        ['選用藥用洗髮精','選擇溫和、不含香料與酒精的洗劑，頭皮症狀可使用含有抗真菌或去屑成分的洗髮精（如 Ketoconazole、Zinc pyrithione、Selenium sulfide、Coal tar等），洗髮時讓泡沫在頭皮停留數分鐘再沖洗，每週使用 2 至 3 次。'],
+        ['正確清潔','避免過度清潔、使用溫水洗臉與溫和洗面乳，避免過度去角質或大力搔抓，以免破壞皮膚屏障'],
+        ['飲食調整','飲食方面可減少高油脂、高糖與辛辣食物的攝取，並多補充蔬果與水分，有助於維持皮膚健康。'],
+        ['保濕','冬天或氣候乾燥時，可使用無刺激性的保濕乳液來避免皮膚乾裂。']
+      ], note:'倘若出現紅腫嚴重、皮膚破損、分泌液體或形成膿皰，應儘速就醫處理，以排除細菌感染等併發症的可能。'}
+    ]
   }
 ];
 function skinConditionHTML(it, idx){
@@ -2759,21 +2794,22 @@ function skinConditionHTML(it, idx){
         <h2>${esc(it.title)}</h2>
       </div>
       <div class="ingredient-section"><h3>${esc(it.overviewTitle)}</h3><p>${esc(it.overview)}</p></div>
-      <div class="ingredient-section">
+      ${it.cycle ? `      <div class="ingredient-section">
         <h3>${esc(it.cycleTitle)}</h3>
         <p class="ingredient-lead">${esc(it.cycleLead)}</p>
         <ol class="skin-cycle">
           ${it.cycle.map((t,i)=>`<li class="skin-step${i===it.cycle.length-1?' skin-step-last':''}"><span class="skin-step-no">${i+1}</span><span class="skin-step-text">${esc(t)}</span></li>`).join('')}
         </ol>
         <div class="skin-loop">↺ ${esc(it.cycleLoop)}</div>
-      </div>
-      <div class="ingredient-section">
+      </div>` : ''}
+      ${it.keys ? `      <div class="ingredient-section">
         <h3>${esc(it.keyTitle)}</h3>
         <p class="ingredient-lead">${esc(it.keyLead)}</p>
         <div class="skin-keys">
           ${it.keys.map(([ic,t],i)=>`<div class="skin-key"><span class="skin-key-ic">${ic}</span><span>${esc(t)}</span></div>${i<it.keys.length-1?'<span class="skin-key-plus">＋</span>':''}`).join('')}
         </div>
-      </div>
+      </div>` : ''}
+      ${(it.sections||[]).map(sec=>`<div class="ingredient-section"><h3>${esc(sec.title)}</h3>${sec.lead?`<p class="ingredient-lead">${esc(sec.lead)}</p>`:''}<ol class="ingredient-effects skin-list">${sec.items.map(x=>Array.isArray(x)?`<li><span class="ingredient-effect-title">${esc(x[0])}</span><span class="ingredient-effect-desc">${esc(x[1])}</span></li>`:`<li><span class="ingredient-effect-desc">${esc(x)}</span></li>`).join('')}</ol>${sec.note?`<div class="ingredient-note">⚠️ ${esc(sec.note)}</div>`:''}</div>`).join('')}
     </div>`;
 }
 let __skinOpen = null;   // null＝疾病卡片列表；數字＝正在檢視的疾病索引

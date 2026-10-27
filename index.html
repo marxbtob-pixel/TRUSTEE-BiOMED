@@ -985,9 +985,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v2.8',
+  version: 'v2.9',
   date: '2026-10-27',
-  notes: '常見肌膚疾病改為兩階段：先看疾病卡片列表，點擊後展開解析並可返回列表'
+  notes: '常見肌膚疾病：點擊疾病卡片時送出 Google 表單紀錄（查詢類別＋疾病名稱）'
 };
 
 /* ======================================================================
@@ -2556,8 +2556,8 @@ function logSearchToGoogleForm(data){
     fields['entry.1369614496'] = data.csCategory || '';    // 客服查詢分類
     fields['entry.591856697'] = data.csQueryContent || '';  // 查詢內容（具體問題題目）
     pageHistory = '0,2';
-  } else if (data.category === '保養品成分解析') {
-    // 保養品成分解析：借用客服知識庫同一區段（第 3 區段）的「查詢內容」欄位
+  } else if (data.category === '保養品成分解析' || data.category === '常見肌膚疾病') {
+    // 保養品成分解析／常見肌膚疾病：借用客服知識庫同一區段（第 3 區段）的「查詢內容」欄位
     // 僅在點擊成分卡片時送出（查詢類別＋查詢內容＝成分名稱）；進入頁面不送出
     fields['entry.591856697'] = data.query || '';
     pageHistory = '0,2';
@@ -2736,6 +2736,7 @@ let __ingredientOpen = null;   // null＝成分卡片列表（第一階段）；
 const SKIN_CONDITIONS = [
   {
     title: '異位性皮膚炎 (Atopic Dermatitis)',
+    logName: '異位性皮膚炎',   // 送出 Google 表單的「查詢內容」
     subtitle: '慢性、反覆發作的過敏性皮膚疾病',
     brief: '主要特徵是皮膚乾燥、劇烈搔癢及反覆發炎，容易陷入「癢→抓→更癢」的惡性循環。',
     overviewTitle: '疾病概述',
@@ -2778,8 +2779,10 @@ function skinConditionHTML(it, idx){
 let __skinOpen = null;   // null＝疾病卡片列表；數字＝正在檢視的疾病索引
 function openSkinCondition(idx, e){
   if(e && e.stopPropagation) e.stopPropagation();
-  if(!SKIN_CONDITIONS[idx]) return;
+  const item = SKIN_CONDITIONS[idx];
+  if(!item) return;
   __skinOpen = idx;
+  logSearchToGoogleForm({ category: '常見肌膚疾病', query: item.logName || item.title });   // 點擊疾病卡片才送出一筆（進入頁面／返回列表不送）
   renderSkinConditionPage();
   window.scrollTo({ top: 0, behavior: 'instant' });
 }

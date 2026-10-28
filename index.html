@@ -153,6 +153,26 @@
     .ingredient-table-stack[data-cols="4"] td{display:block; width:auto; padding:8px 14px; border:none; border-top:1px solid #EAF1EE;}
     .ingredient-table-stack[data-cols="4"] td::before{content:attr(data-label); display:block; font-size:12.5px; font-weight:700; color:#2D6A5D; margin-bottom:2px;}
   }
+  .skin-table-stack{width:100%; min-width:0; table-layout:fixed; font-size:14px;}
+  .skin-table-stack thead th{white-space:normal; line-height:1.4; padding:10px 10px; vertical-align:top;}
+  .skin-table-stack th, .skin-table-stack td{padding:10px 10px; vertical-align:top; word-break:break-word; line-height:1.65;}
+  .skin-table-stack th:first-child{width:11%; white-space:normal;}
+  .skin-table-stack tbody th{min-width:0; width:auto;}
+  @media (max-width:640px){
+    .skin-table-stack{display:block; width:100%;}
+    .skin-table-stack thead{display:none;}
+    .skin-table-stack tbody, .skin-table-stack tr{display:block; width:100%;}
+    .skin-table-stack tr{border-bottom:8px solid #F2F8F6;}
+    .skin-table-stack tbody th[scope="row"]{display:block; width:auto; background:#E6F4F0; color:#1F4E44; font-size:15.5px; padding:10px 14px;}
+    .skin-table-stack td{display:block; width:auto; padding:8px 14px; border:none; border-top:1px solid #EAF1EE;}
+    .skin-table-stack td::before{content:attr(data-label); display:block; font-size:12.5px; font-weight:700; color:#2D6A5D; margin-bottom:2px;}
+  }
+  .ingredient-extra-panel .skin-list{margin-bottom:14px;}
+  .ingredient-extra-panel .skin-list li{background:#fff;}
+  .ingredient-extra-panel .ingredient-extra-sub{margin-top:4px;}
+  .ingredient-section-tight{margin-top:-6px;}
+  .skin-tabs-btns{grid-template-columns:1fr;}
+  .skin-tab-btn{white-space:normal; line-height:1.45; text-align:center;}
   .ingredient-extra-sub-gap{margin-top:18px;}
   .ingredient-points{margin:0; padding-left:22px; line-height:1.85; font-size:15px;}
   .ingredient-points li{margin-bottom:6px; padding-left:4px;}
@@ -985,9 +1005,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v3.1',
-  date: '2026-10-27',
-  notes: '常見肌膚疾病新增「敏感性膚質」「過敏性皮膚炎」並置於前兩張，原有疾病編號順延'
+  version: 'v3.4',
+  date: '2026-10-28',
+  notes: '皮脂管絲 5 個頁籤內容填入（成因、清與擠、清潔保養 3 大關鍵、保養成分表、常見 QA）'
 };
 
 /* ======================================================================
@@ -2751,6 +2771,174 @@ const SKIN_CONDITIONS = [
     overview: '則是接觸性皮膚炎的一種，指的是皮膚對於某些特定成份，例如保養品中最常見的香料、防腐劑或其他化學成份等，會產生紅、腫、發癢、起丘疹，甚至脫皮等反應。'
   },
   {
+    title: '皮脂管絲 (Sebaceous Filaments)',
+    logName: '皮脂管絲',
+    subtitle: '毛孔中由皮脂與角質堆積形成的細絲狀物質',
+    brief: '常見於鼻翼、鼻頭與下巴，是皮脂腺正常運作的生理現象，並不等同於粉刺。',
+    overviewTitle: '一. 皮脂管絲是什麼？',
+    overview: '',
+    sections: [
+      {title:'', items:[
+        ['性質與功能','皮脂腺分泌與代謝的正常生理構造，非皮膚疾病。功能如毛孔內的微型水管，負責輸送油脂以滋潤肌膚與維持屏障。'],
+        ['物質組成','由皮脂、老廢角質細胞、少量毛髮殘根與表皮常駐菌群混合而成。'],
+        ['外觀質地','呈灰白、淺黃或淡灰色微小點狀；擠壓會出軟質蠟狀絲線（尾端尖細）。'],
+        ['常見部位','出油旺盛的 T 字部位（額頭、鼻頭、鼻翼、下巴）、臉頰及前胸後背。']
+      ]}
+    ],
+    tabs: [
+      {title:'皮脂管絲的成因是什麼？', content:[
+        {lead:'核心觀點', text:'皮脂管絲是皮膚每 24～48 小時不間斷的自然生理分泌循環。'},
+        {h:'5 大主因', list:[
+          ['毛孔粗大與鬆弛','毛孔開口大或組織鬆弛使管絲易顯露。'],
+          ['皮脂分泌旺盛','荷爾蒙、青春期、高油高糖飲食或熬夜刺激油脂分泌。'],
+          ['年齡與彈性流失','30～50 歲膠原蛋白流失，毛孔失去緊實張力。'],
+          ['基因遺傳','天生毛孔粗大或毛髮較粗者較明顯。'],
+          ['不當保養與曝曬','過度清潔破壞屏障，或紫外線照射導致角質代謝變差。']
+        ]}
+      ]},
+      {title:'皮脂管絲要清嗎？可以擠嗎？', content:[
+        {lead:'不需要刻意清除', text:'屬於正常生理構造，暫時清空後因 24～48 小時分泌週期，2～3 天內又會自動填滿，無法根除。'},
+        {h:'千萬不可暴力擠壓或使用撕除式粉刺貼', list:[
+          ['破壞毛孔結構','損害膠原蛋白與角質層，導致毛孔永久鬆弛變大。'],
+          ['代償性出油','破壞皮脂膜刺激油脂分泌更多、更快填滿。'],
+          ['引發發炎','手部細菌易引發毛囊炎或惡化成痘痘。']
+        ]}
+      ]},
+      {title:'如何清潔與保養？減少皮脂管絲的3大關鍵', content:[
+        {lead:'核心邏輯', text:'溫和疏通、穩定控油、維持油水平衡。'},
+        {list:[
+          ['關鍵 1　溫和淨化清潔','選用胺基酸系或無皂鹼洗面乳（pH5.5 左右）早晚溫和清洗，避免粗糙摩擦；每週可 1 次使用活性竹炭或凍膜吸附多餘油脂。'],
+          ['關鍵 2　調理角質代謝','每週 1～2 次使用天然酵素或低濃度酸類，軟化老廢角質並暢通毛孔。'],
+          ['關鍵 3　維持油水平衡','外在補充神經醯胺、玻尿酸、角鯊烷、菸鹼醯胺（B3）修護屏障；內在少油糖不熬夜，適量補充鋅與維生素 B 群（如 B3 菸鹼醯胺、B6）調節皮脂腺。']
+        ]}
+      ]},
+      {title:'對抗皮脂管絲的保養成分', content:[
+        {table:{
+          head:['保養成分類型','代表成分','作用機制與使用注意事項'],
+          rows:[
+            ['脂溶性代謝酸類','水楊酸 (BHA)','具親脂特性，能深入毛孔溶解過多皮脂與老廢角質，適合油性/混合肌（建議濃度 2% 以下，每週 1–2 次）。'],
+            ['水溶性/親脂表層酸類','杏仁酸 / 甘醇酸 (AHA)','表層代謝老廢角質，改善膚觸粗糙與暗沉（建議低濃度如 5–10% 開始，注意耐受性）。'],
+            ['溫和更新與角質調理','補骨脂酚 / A 醇 (Retinol)','促進肌膚角質正常更新代謝與膠原蛋白增生；植物性補骨脂酚比酸類及 A 酸更溫和少刺激。'],
+            ['皮脂調節與控油','菸鹼醯胺 (維生素 B3) / 鋅 (Zinc)','調節皮脂腺過度分泌，減少油脂過度堆積，同時舒緩膚況。'],
+            ['屏障修護與保濕','神經醯胺 / 玻尿酸 / 角鯊烷','補水鎖水、修護角質屏障與毛孔周圍結構，維持健康油水平衡。'],
+            ['天然吸附與軟化/抗菌','活性竹炭 / Papain 酵素 / 茶樹精油','竹炭溫和吸附深層皮脂；酵素分解軟化角質；茶樹精油天然抗菌抗炎（濃度不宜超過 5%）。']
+          ]
+        }}
+      ]},
+      {title:'皮脂管絲常見QA', content:[
+        {list:[
+          ['Q1：皮脂管絲有可能完全消失、達成「零毛孔」嗎？','無法完全消滅。皮脂管絲是皮膚健康的正常生理構造，只要皮脂腺還在工作就會持續產生。衛教與保養的目標是將其維持在「毛孔暢通、肉眼看不太出來」的細緻狀態。'],
+          ['Q2：使用撕除式粉刺貼黏出密密麻麻的「粉刺林」，代表清得很乾淨嗎？','那大多不是粉刺，而是皮脂管絲！這種物理性拉扯會破壞毛孔周圍結構與健康角質層，長期使用會使毛孔越來越大、代償性出油越來越多，形成惡性循環。'],
+          ['Q3：敷完清潔面膜或凍膜後，浮出來的白白皮脂管絲該怎麼處理？','當皮脂管絲被軟化浮出表層時，只需使用濕潤棉花棒或粉刺夾「輕輕刮除/順手帶走」表面浮出物即可，切勿用力硬捏硬擠。'],
+          ['Q4：皮膚科醫師建議的酸類保養「4 步驟」與注意事項是什麼？','皮膚科醫師建議酸類使用 4 大觀點：①選對低濃度酸類（如杏仁酸 5–10% 或水楊酸 1–2%）、② 控制頻率（一週 2–3 次，非天天擦）、③ 局部使用（僅擦 T 字出油區）、④ 加強保濕與防曬。酸類建議於夜間使用，隔天務必防曬以防曬傷或反黑。'],
+          ['Q5：若皮脂管絲極度嚴重影響外觀，皮膚科臨床上有什麼專業處理管道？','若嚴重影響視覺或難以上妝，可諮詢皮膚科醫師診斷。經醫師專業評估後，可開立口服 A 酸來抑制皮脂腺分泌，或透過醫美深層清潔療程，溫和去除老廢角質與毛孔深層髒污，恢復肌膚平滑感。']
+        ]}
+      ]}
+    ]
+  },
+  {
+    title: '黑頭/白頭粉刺 (Blackheads / Whiteheads)',
+    logName: '黑頭/白頭粉刺',
+    subtitle: '毛孔堵塞所形成的開放性與閉鎖性粉刺',
+    brief: '皮脂與老廢角質堵塞毛孔，黑頭為開放性粉刺，白頭為閉鎖性粉刺，是痘痘的前期。',
+    overviewTitle: '一. 認識黑頭與白頭粉刺',
+    overview: '粉刺是由過多皮脂與老廢角質堵塞毛囊開口所形成的皮膚問題。毛孔開口外露、堵塞物接觸空氣氧化後呈現黑色的稱為「黑頭粉刺（開放性粉刺）」；毛孔開口被皮膚覆蓋而封閉、呈現白色或膚色小顆粒的則稱為「白頭粉刺（閉鎖性粉刺）」。',
+    sections: [
+      {title:'二. 黑頭與白頭的差異', items:[
+        ['黑頭粉刺（開放性）','毛孔開口張開，堵塞物氧化後呈黑色，多出現在鼻頭與鼻翼。'],
+        ['白頭粉刺（閉鎖性）','毛孔開口被封住，呈白色或膚色小凸起，不易自行排出，較容易進一步發炎成痘痘。']
+      ]},
+      {title:'三. 常見形成原因', items:[
+        '皮脂分泌旺盛',
+        '角質代謝異常、老廢角質堆積',
+        '荷爾蒙變化、壓力與作息不規律',
+        '使用過於油膩或不適合的保養品、彩妝，且卸除不徹底'
+      ]},
+      {title:'四. 日常保養重點', items:[
+        ['確實卸妝與溫和清潔','避免殘留彩妝與防曬堵塞毛孔，但也不要過度清潔。'],
+        ['規律調理角質','可依膚況搭配水楊酸（BHA）、果酸（AHA）等成分，建議循序漸進並加強防曬。'],
+        ['選擇不易致粉刺的保養品','挑選清爽、標示不致粉刺（non-comedogenic）的產品。'],
+        ['避免自行擠壓','不當擠壓容易造成發炎、疤痕或色素沉澱，建議交由專業人員處理。']
+      ]}
+    ]
+  },
+  {
+    title: '蠕形蟎蟲 (Demodex)',
+    logName: '蠕形蟎蟲',
+    subtitle: '寄居於毛囊與皮脂腺的常見微小寄生蟲',
+    brief: '多數人皮膚上都有，數量過度增生時可能與毛囊發炎、紅斑、搔癢及酒糟性皮膚炎等相關。',
+    overviewTitle: '一. 認識蠕形蟎蟲',
+    overview: '蠕形蟎蟲（毛囊蟲）是一種肉眼看不見的微小節肢動物，主要寄居在人類臉部的毛囊與皮脂腺中，以皮脂與角質為食，包含毛囊蠕形蟎與皮脂蠕形蟎兩種。多數人皮膚上都帶有少量蠕形蟎蟲，通常不會造成問題；當數量過度增生或皮膚屏障失衡時，才可能引起不適。',
+    sections: [
+      {title:'二. 好發部位', items:[
+        '臉部：鼻翼、兩頰、額頭、下巴',
+        '眉毛、睫毛根部（可能與眼瞼緣發炎有關）'
+      ]},
+      {title:'三. 過度增生時可能出現的症狀', items:[
+        '皮膚泛紅、搔癢、灼熱或刺痛感',
+        '毛孔粗大、皮膚粗糙、脫屑',
+        '反覆出現類似痘痘的丘疹或膿皰',
+        '睫毛根部出現圓筒狀皮屑、眼睛搔癢（眼瞼炎）'
+      ]},
+      {title:'四. 日常保養重點', items:[
+        ['維持皮膚清潔','溫和清潔臉部，避免過度清潔，並定期更換枕頭套、毛巾，保持乾燥清潔。'],
+        ['控制油脂與避免過度油膩','減少使用過於厚重油膩的保養品與彩妝，且確實卸除。'],
+        ['避免共用物品','避免與他人共用毛巾、枕頭、化妝刷與彩妝用品。'],
+        ['強化皮膚屏障','選用溫和、低刺激的保養，維持皮膚屏障健康。']
+      ], note:'若症狀反覆發作、紅腫明顯或影響到眼睛，請由皮膚科或眼科醫師評估，再依醫囑接受適當的治療。'}
+    ]
+  },
+  {
+    title: '皮脂管絲 / 黑頭粉刺 / 白頭粉刺 / 蠕形蟎蟲 差異比較表',
+    logName: '皮脂管絲 / 黑頭粉刺 / 白頭粉刺 / 蠕形蟎蟲 差異比較表',
+    subtitle: '四種常見毛孔問題的成因、外觀、觸感與處置對照',
+    brief: '從成因、外觀特徵、好發部位、觸感到建議處置，一表對照，方便快速分辨與說明。',
+    overviewTitle: '一. 為什麼需要比較？',
+    overview: '皮脂管絲、黑頭粉刺、白頭粉刺與蠕形蟎蟲症都與毛孔和皮脂腺有關，外觀容易混淆，但屬性、成因與建議的處理方式並不相同。以下用對照表整理，方便同仁快速分辨並向顧客說明。',
+    table: {
+      title: '二. 差異對照表',
+      head: ['比較項目','皮脂管絲 (Sebaceous Filaments)','黑頭粉刺 (Blackheads / 開放型)','白頭粉刺 (Whiteheads / 閉鎖型)','蠕形蟎蟲症 (Demodex)'],
+      rows: [
+        ['屬性與成因','正常生理構造；皮脂、角質與細菌順暢運送的通道。','皮膚疾病（痤瘡前期）；角質異常堵塞毛孔，油脂堆積並氧化變黑。','皮膚疾病；毛孔開口被角質完全封閉，油脂被悶堆於底層膨脹。','微生物異常；毛囊蠕形蟎蟲大量異常增生，塞滿毛囊開口。'],
+        ['毛孔開口狀態','開放且暢通。','開放但被堵塞。','完全封閉/閉鎖。','被蟲體塞滿。'],
+        ['外觀特徵','淺白、灰淡黃色點狀，排列整齊密集，遠看像薄霧點點。','明顯深黑點，大小不一，分布較不規則，略凸起有顆粒感。','膚色或白色微凸小丘疹，摸起來有明顯顆粒凸起感。','肉眼可見密集白白小凸起，臉部常伴隨泛紅（酒糟）、曬熱易紅或觸感粗糙。'],
+        ['擠出來的型態','柔軟細長的蠟狀絲或牙膏狀線條，尾端尖細。','乾硬的米粒狀、水滴型/錐體硬塊，頂端黑化。','固態油脂顆粒（下方膨脹如水滴/梨子狀，極難擠出，硬擠易發炎）。','靠傳統捏擠或妙鼻貼無法清除（屬異常增生之蟲體）。'],
+        ['復發狀況','24～48 小時（2～3 天）內因皮脂正常分泌再次填滿。','徹底清除與代謝改善後，不會迅速原處長回。','未妥善處理易破裂惡化成發炎性丘疹或膿包痘痘。','需使用專門抗蟎藥物，否則會持續發炎泛紅。'],
+        ['建議處理方式','不需強迫清除；注重溫和清潔、控油與酸類/酵素代謝。','溫和酸類/A酸代謝調理，必要時由皮膚科/專業人士協助。','使用酸類或 A 酸調理角質正常代謝，防止變成發炎痘痘。','尋求皮膚科醫師診斷（鏡檢），使用抗蠕形蟎蟲專門藥物治療。']
+      ]
+    },
+    note: '以上為一般性對照，實際判斷不易；若症狀反覆或惡化，請尋求專業皮膚科醫師協助，由醫師評估並依醫囑處理。'
+  },
+  {
+    title: '痘痘/膿皰 (Acne / Pustules)',
+    logName: '痘痘/膿皰',
+    subtitle: '毛囊皮脂腺的慢性發炎性皮膚問題',
+    brief: '粉刺進一步發炎可形成紅腫丘疹與膿皰，與皮脂過多、角質堵塞、痤瘡桿菌及發炎反應有關。',
+    overviewTitle: '一. 認識痘痘與膿皰',
+    overview: '痘痘（痤瘡）是毛囊皮脂腺的慢性發炎性皮膚問題。當皮脂過多、角質堵塞毛孔，加上痤瘡桿菌繁殖與發炎反應，粉刺便可能進一步變成紅腫的丘疹，嚴重時形成含有膿液的膿皰，甚至結節或囊腫。',
+    sections: [
+      {title:'二. 痘痘的發展階段', items:[
+        ['粉刺','毛孔被皮脂與角質堵塞，形成黑頭或白頭粉刺。'],
+        ['丘疹','堵塞毛孔受到細菌刺激而發炎，出現紅腫的小突起。'],
+        ['膿皰','發炎持續，毛囊內累積膿液，表面可見白色或黃色膿頭。'],
+        ['結節／囊腫','發炎深入真皮層，形成較大且疼痛的硬塊，較容易留下疤痕。']
+      ]},
+      {title:'三. 常見誘發與惡化因素', items:[
+        '荷爾蒙變化（青春期、經期前後等）',
+        '皮脂分泌旺盛與角質代謝異常',
+        '壓力大、睡眠不足、作息不規律',
+        '使用不適合的保養品或彩妝、清潔不當',
+        '用手摸臉、擠壓痘痘'
+      ]},
+      {title:'四. 日常保養重點', items:[
+        ['溫和清潔與保濕','避免過度清潔造成屏障受損，反而讓皮脂分泌更旺盛。'],
+        ['避免擠壓痘痘','擠壓容易使發炎加劇，增加留下疤痕與色素沉澱的風險。'],
+        ['生活調節','保持規律作息、睡眠充足、紓解壓力。'],
+        ['做好防曬','痘痘發炎後容易產生色素沉澱，日常防曬有助於減少痘印。']
+      ], note:'若出現大量發炎性痘痘、結節或囊腫、疼痛明顯或反覆留下疤痕，請儘速就醫，由皮膚科醫師評估並依醫囑接受治療。'}
+    ]
+  },
+  {
     title: '異位性皮膚炎 (Atopic Dermatitis)',
     logName: '異位性皮膚炎',   // 送出 Google 表單的「查詢內容」
     subtitle: '慢性、反覆發作的過敏性皮膚疾病',
@@ -2801,6 +2989,33 @@ const SKIN_CONDITIONS = [
     ]
   }
 ];
+let __skinTabOpen = null;
+function toggleSkinTab(idx, i){
+  const it = SKIN_CONDITIONS[idx], t = it && it.tabs && it.tabs[i];
+  const panel = document.getElementById('skinTabPanel');
+  if(!t || !panel) return;
+  const same = (__skinTabOpen === i);
+  __skinTabOpen = same ? null : i;
+  document.querySelectorAll('.skin-tab-btn').forEach((b,k)=>{
+    const on = (k === __skinTabOpen);
+    b.classList.toggle('active', on);
+    b.setAttribute('aria-selected', on ? 'true' : 'false');
+  });
+  if(same){ panel.hidden = true; panel.innerHTML = ''; return; }
+  panel.hidden = false;
+  panel.innerHTML = `<h3>${esc(t.title)}</h3>` + (Array.isArray(t.content) ? skinTabBlocksHTML(t.content) : (t.content ? `<p>${esc(t.content)}</p>` : `<div class="ingredient-empty">內容建置中，敬請期待。</div>`));
+  panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function skinTabBlocksHTML(blocks){
+  return blocks.map(b=>{
+    let h = '';
+    if(b.lead) h += `<div class="ingredient-note ingredient-highlight"><strong>${esc(b.lead)}</strong>${esc(b.text||'')}</div>`;
+    if(b.h) h += `<h4 class="ingredient-extra-sub">${esc(b.h)}</h4>`;
+    if(b.list) h += `<ol class="ingredient-effects skin-list">${b.list.map(x=>Array.isArray(x)?`<li><span class="ingredient-effect-title">${esc(x[0])}</span><span class="ingredient-effect-desc">${esc(x[1])}</span></li>`:`<li><span class="ingredient-effect-desc">${esc(x)}</span></li>`).join('')}</ol>`;
+    if(b.table) h += `<div class="ingredient-table-wrap"><table class="ingredient-table skin-table-stack"><thead><tr>${b.table.head.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${b.table.rows.map(r=>`<tr>${r.map((c,i)=>i===0?`<th scope="row">${esc(c)}</th>`:`<td data-label="${esc(b.table.head[i])}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    return h;
+  }).join('');
+}
 function skinConditionHTML(it, idx){
   return `
     <div class="ingredient-card skin-card">
@@ -2809,7 +3024,7 @@ function skinConditionHTML(it, idx){
         <span class="ingredient-name-tag">肌膚疾病 ${String(idx + 1).padStart(2, '0')}</span>
         <h2>${esc(it.title)}</h2>
       </div>
-      <div class="ingredient-section"><h3>${esc(it.overviewTitle)}</h3><p>${esc(it.overview)}</p></div>
+      <div class="ingredient-section"><h3>${esc(it.overviewTitle)}</h3>${it.overview ? `<p>${esc(it.overview)}</p>` : ''}</div>
       ${it.cycle ? `      <div class="ingredient-section">
         <h3>${esc(it.cycleTitle)}</h3>
         <p class="ingredient-lead">${esc(it.cycleLead)}</p>
@@ -2825,7 +3040,9 @@ function skinConditionHTML(it, idx){
           ${it.keys.map(([ic,t],i)=>`<div class="skin-key"><span class="skin-key-ic">${ic}</span><span>${esc(t)}</span></div>${i<it.keys.length-1?'<span class="skin-key-plus">＋</span>':''}`).join('')}
         </div>
       </div>` : ''}
-      ${(it.sections||[]).map(sec=>`<div class="ingredient-section"><h3>${esc(sec.title)}</h3>${sec.lead?`<p class="ingredient-lead">${esc(sec.lead)}</p>`:''}<ol class="ingredient-effects skin-list">${sec.items.map(x=>Array.isArray(x)?`<li><span class="ingredient-effect-title">${esc(x[0])}</span><span class="ingredient-effect-desc">${esc(x[1])}</span></li>`:`<li><span class="ingredient-effect-desc">${esc(x)}</span></li>`).join('')}</ol>${sec.note?`<div class="ingredient-note">⚠️ ${esc(sec.note)}</div>`:''}</div>`).join('')}
+      ${it.table ? `<div class="ingredient-section"><h3>${esc(it.table.title||'對照表')}</h3><div class="ingredient-table-wrap"><table class="ingredient-table skin-table-stack"><thead><tr>${it.table.head.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${it.table.rows.map(r=>`<tr>${r.map((c,i)=>i===0?`<th scope="row">${esc(c)}</th>`:`<td data-label="${esc(it.table.head[i])}">${esc(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${it.note?`<div class="ingredient-note">⚠️ ${esc(it.note)}</div>`:''}</div>` : ''}
+      ${(it.sections||[]).map(sec=>`<div class="ingredient-section${sec.title ? '' : ' ingredient-section-tight'}">${sec.title ? `<h3>${esc(sec.title)}</h3>` : ''}${sec.lead?`<p class="ingredient-lead">${esc(sec.lead)}</p>`:''}<ol class="ingredient-effects skin-list">${sec.items.map(x=>Array.isArray(x)?`<li><span class="ingredient-effect-title">${esc(x[0])}</span><span class="ingredient-effect-desc">${esc(x[1])}</span></li>`:`<li><span class="ingredient-effect-desc">${esc(x)}</span></li>`).join('')}</ol>${sec.note?`<div class="ingredient-note">⚠️ ${esc(sec.note)}</div>`:''}</div>`).join('')}
+      ${it.tabs && it.tabs.length ? `<div class="ingredient-extras skin-tabs"><div class="ingredient-extras-btns skin-tabs-btns" role="tablist">${it.tabs.map((t,i)=>`<button type="button" role="tab" class="ingredient-extra-btn skin-tab-btn" id="skinTabBtn${i}" aria-selected="false" onclick="toggleSkinTab(${idx},${i})">${esc(t.title)}</button>`).join('')}</div><div class="ingredient-extra-panel" id="skinTabPanel" role="tabpanel" hidden></div></div>` : ''}
     </div>`;
 }
 let __skinOpen = null;   // null＝疾病卡片列表；數字＝正在檢視的疾病索引
@@ -2833,7 +3050,7 @@ function openSkinCondition(idx, e){
   if(e && e.stopPropagation) e.stopPropagation();
   const item = SKIN_CONDITIONS[idx];
   if(!item) return;
-  __skinOpen = idx;
+  __skinOpen = idx; __skinTabOpen = null;
   logSearchToGoogleForm({ category: '常見肌膚疾病', query: item.logName || item.title });   // 點擊疾病卡片才送出一筆（進入頁面／返回列表不送）
   renderSkinConditionPage();
   window.scrollTo({ top: 0, behavior: 'instant' });

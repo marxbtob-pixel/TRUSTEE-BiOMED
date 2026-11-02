@@ -1008,9 +1008,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v4.0',
+  version: 'v4.1',
   date: '2026-11-02',
-  notes: '語音教案點擊紀錄改為通用函式（由 data-brand／data-product 動態帶入品牌與商品名稱）'
+  notes: '語音教案紀錄的「查詢產品名稱」改為只填純商品名稱（無商品時填「語音教案」）'
 };
 
 /* ======================================================================
@@ -6022,13 +6022,13 @@ function sendChat(brandId){
 /* 語音教案點擊紀錄（通用）：品牌與商品名稱一律由卡片的 data-brand／data-product 屬性動態讀取，
    新增品牌或課程時只要在 BRANDS 的 audioLessons 填資料（可含 product），不需要再修改這段 JS。
    表單欄位：查詢品牌＝{品牌名稱}／查詢類別＝產品知識庫／使用的查詢方式＝語音教案／
-             查詢產品名稱＝{品牌名稱} {商品名稱} 語音教案 */
+             查詢產品名稱＝純商品名稱（無商品時填「語音教案」） */
 function logAudioLessonClick(el){
   const card = el && el.closest ? el.closest('[data-audio-lesson]') : null;
   if(!card) return;
   const brand = (card.dataset.brand || '').trim();
   const product = (card.dataset.product || '').trim();
-  const productName = [brand, product, '語音教案'].filter(Boolean).join(' ');
+  const productName = product || '語音教案';   // 只填純商品名稱；品牌沒有特定商品時填「語音教案」
   logSearchToGoogleForm({ brand: brand, category: '產品知識庫', actionType: '語音教案', productName: productName });
 }
 function toggleAudioLesson(id, btn){

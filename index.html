@@ -519,7 +519,7 @@
   .qa-item{border:1px solid var(--border); border-radius:var(--radius-sm); padding:16px 18px;}
   .qa-q{font-size:16.5px; font-weight:600; margin-bottom:8px; display:flex; gap:8px; align-items:flex-start; flex-wrap:wrap;}
   .qa-accordion .qa-q{margin-bottom:0;}
-  .qa-q-toggle{cursor:pointer; align-items:center; padding:2px 0; user-select:none;}
+  .qa-q-toggle{cursor:pointer; align-items:center; padding:2px 0;}
   .qa-arrow{
     margin-left:auto; color:var(--band-color,var(--brand)); font-size:11px; transition:transform .2s; flex-shrink:0;
   }
@@ -529,6 +529,11 @@
     margin-left:auto; font-size:11px; font-weight:500; color:var(--muted); background:var(--bg);
     padding:2px 10px; border-radius:99px; white-space:nowrap;
   }
+  /* 問答題目文字一律可被游標選取、複製（含手風琴式題目列） */
+  .qa-q, .qa-q *, .qa-q-toggle, .qa-q-toggle *, .qa-a, .qa-a *{
+    -webkit-user-select:text; user-select:text;
+  }
+  .qa-q-toggle .qa-arrow{-webkit-user-select:none; user-select:none;}   /* 只有 ▼ 箭頭圖示不需選取 */
   .qa-q .qmark{color:var(--band-color,var(--brand)); flex-shrink:0;}
   .qa-a{font-size:16px; color:var(--muted); line-height:1.75; padding-left:22px;}
   .qa-category{
@@ -1008,9 +1013,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v4.2',
-  date: '2026-11-02',
-  notes: '語音教案紀錄：有商品填純商品名稱，無商品填「{品牌名稱} 語音教案」'
+  version: 'v4.4',
+  date: '2026-11-03',
+  notes: 'AI 商品問答比對修正：問句口語正規化（燙完頭髮→燙髮）、題庫答案優先於產品介紹'
 };
 
 /* ======================================================================
@@ -5441,7 +5446,7 @@ function renderKBGeneralCategory(catId){
 function findGlobalAnswer(query){
   let best = { score:0, data:null };
   collectGlobalQA().forEach(item=>{
-    const s = matchScore(query, item.q) + qaIntentBoost(query, item.q) + keywordBoost(query, item);
+    const s = qaScore(query, item);
     if(s > best.score) best = { score:s, data:item };
   });
   if(best.score < 0.24 || !best.data) return null;
@@ -5475,7 +5480,7 @@ function smartQAFilter(all, keyword){
   if(!q) return all;
   const qLower = q.toLowerCase();
   const scored = all.map(item=>{
-    let s = matchScore(q, item.q) + qaIntentBoost(q, item.q) + keywordBoost(q, item);
+    let s = qaScore(q, item);
     if(item.q.toLowerCase().includes(qLower) || item.a.toLowerCase().includes(qLower)) s += 1;
     if((item.keywords||[]).some(kw=>kw.toLowerCase().includes(qLower) || qLower.includes(kw.toLowerCase()))) s += 1;
     return { item, s };
@@ -5859,6 +5864,8 @@ function qaItemHTML(item, ctx){
   `;
 }
 function toggleQABody(bodyId, arrowId, category, brand, actionType, csCategory, question){
+  // 使用者正在用游標拖曳選取題目文字時，不要觸發展開／收合（也不送出紀錄），以便順利複製題目
+  try{ const sel = window.getSelection && window.getSelection().toString(); if(sel && sel.trim()) return; }catch(e){}
   const body = document.getElementById(bodyId);
   const arrow = document.getElementById(arrowId);
   if(!body) return;
@@ -5896,6 +5903,18 @@ function filterQAList(brandId, keyword){
   const all = collectAllQA(b);
   paintQAList(smartQAFilter(all, keyword), b.name);
 }
+/* 問句正規化：把口語說法統一成題庫用語，避免「燙完頭髮」對不到題庫的「燙髮完」。
+   matchScore／qaIntentBoost／keywordBoost 都會先經過它，所以單一品牌 AI 問答、跨品牌 AI 問答與搜尋篩選一起受惠。 */
+const QA_QUERY_SYNONYMS = [
+  [/剛燙完頭髮|燙完頭髮|燙過頭髮|燙了頭髮|燙頭髮|剛燙完|剛燙過|燙完|燙過|剛燙/g, '燙髮'],
+  [/孕婦|懷孕中|懷孕|有孕|孕媽/g, '孕期'],
+  [/剛染完頭髮|染完頭髮|染過頭髮|染了頭髮|染頭髮|剛染完|剛染過|染完|染過|剛染/g, '染髮']
+];
+function normalizeQAQuery(q){
+  let t = q || '';
+  QA_QUERY_SYNONYMS.forEach(([re, to])=>{ t = t.replace(re, to); });
+  return t;
+}
 function textBigrams(s){
   const clean = (s||'').replace(/[\s，。！？、,.!?～~：:（）()「」『』【】\/／\-—]/g,'');
   const arr = [];
@@ -5904,6 +5923,7 @@ function textBigrams(s){
 }
 function matchScore(query, text){
   if(!text) return 0;
+  query = normalizeQAQuery(query);
   const qGrams = textBigrams(query);
   if(!qGrams.length) return 0;
   const tSet = new Set(textBigrams(text));
@@ -5913,6 +5933,7 @@ function matchScore(query, text){
 }
 const QA_INTENT_TERMS = ['孕婦','孕期','懷孕','哺乳','酒精','香精','香料','全素','動物實驗','蠶豆症','過敏','敏感肌','冷藏','保存期限','變質','沉澱','發炎','傷口','小孩','兒童','寶寶','嬰兒','術後','醫美','刺激','脫皮','受損','頭皮','指甲','蜜粉','色號','黑眼圈','起泡','泡沫','生髮','脫髮','掉髮','過度清潔','乾燥','染色','上色','褪色','維持','燙髮','鬢角','眉毛','手套','弄到','沾到','肝斑','斑點','美白','淡斑','痘疤','痘痘','粉刺','眼袋','脂肪球','雷射','類固醇','防腐劑','搭配乳液','按壓','滴管','蟎蟲','酒糟','毛囊角化'];
 function qaIntentBoost(query, qaQuestion){
+  query = normalizeQAQuery(query);
   let boost = 0;
   QA_INTENT_TERMS.forEach(term=>{
     if(query.includes(term) && qaQuestion.includes(term)) boost += 0.8;
@@ -5923,23 +5944,37 @@ function qaIntentBoost(query, qaQuestion){
 // 只要問題裡出現任一關鍵字，就大幅加分，比對更精準且不需仰賴文字重疊率。
 function keywordBoost(query, item){
   if(!item.keywords || !item.keywords.length) return 0;
+  query = normalizeQAQuery(query);
   let boost = 0;
   item.keywords.forEach(kw=>{
     if(query.includes(kw)) boost += 1.2;
   });
   return boost;
 }
+// 題庫統一計分：問句涵蓋題目的程度（matchScore）＋題目被問句涵蓋的程度（coverage，用來打破平手，
+// 讓「題目整句都對得上」的題庫項目勝過只有幾個通用詞重疊的項目）＋意圖詞／自訂關鍵字加分。
+function qaCoverage(query, qaQuestion){
+  const qSet = new Set(textBigrams(normalizeQAQuery(query)));
+  const tGrams = textBigrams(qaQuestion);
+  if(!tGrams.length) return 0;
+  let hit = 0;
+  tGrams.forEach(g=>{ if(qSet.has(g)) hit++; });
+  return hit / tGrams.length;
+}
+function qaScore(query, item){
+  return matchScore(query, item.q) + 0.3 * qaCoverage(query, item.q) + qaIntentBoost(query, item.q) + keywordBoost(query, item);
+}
 function findAnswer(b, query){
   // 1) match against brand Q&A (compute independently first)
   let bestQA = { score:0, data:null };
   (b.qa||[]).forEach(item=>{
-    const s = matchScore(query, item.q) + qaIntentBoost(query, item.q) + keywordBoost(query, item);
+    const s = qaScore(query, item);
     if(s > bestQA.score) bestQA = { score:s, data:item };
   });
   // also check per-product QA if present
   (b.products||[]).forEach(p=>{
     (p.qa||[]).forEach(item=>{
-      const s = matchScore(query, item.q) + qaIntentBoost(query, item.q) + keywordBoost(query, item);
+      const s = qaScore(query, item);
       if(s > bestQA.score) bestQA = { score:s, data:item };
     });
   });
@@ -5972,7 +6007,10 @@ function findAnswer(b, query){
   });
   const THRESHOLD = 0.24;
   let best;
-  if(bestQA.score >= bestProduct.score){
+  // 題庫（品牌 Q&A＋產品 QA 查詢）優先：只要題庫已有相當程度的命中（>= QA_PRIORITY_SCORE），
+  // 就直接採用題庫答案，不被「產品介紹」等長文字的籠統相似度蓋過。
+  const QA_PRIORITY_SCORE = 0.5;
+  if(bestQA.score >= bestProduct.score || bestQA.score >= QA_PRIORITY_SCORE){
     best = { score:bestQA.score, type:'qa', data:bestQA.data };
   } else {
     best = { score:bestProduct.score, type:'product', data:bestProduct.data };

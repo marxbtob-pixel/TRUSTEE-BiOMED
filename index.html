@@ -573,6 +573,8 @@
     margin-bottom:16px;
   }
   .msg{max-width:78%; padding:11px 15px; border-radius:14px; font-size:16.5px; line-height:1.6;}
+  .ai-chip{color:var(--primary,#2b6cb0);cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+  .ai-chip:hover{opacity:.75;}
   .msg.bot{background:var(--bg); border:1px solid var(--border); align-self:flex-start; border-bottom-left-radius:4px;}
   .msg.user{background:var(--band-color,var(--brand)); color:#fff; align-self:flex-end; border-bottom-right-radius:4px;}
   .chat-input-row{display:flex; gap:10px;}
@@ -1013,9 +1015,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v4.4',
-  date: '2026-11-03',
-  notes: 'AI 商品問答比對修正：問句口語正規化（燙完頭髮→燙髮）、題庫答案優先於產品介紹'
+  version: 'v4.6',
+  date: '2026-11-06',
+  notes: 'AI 商品問答改為六情境路由：提到商品即硬過濾、未指定商品多品牌皆有則請補商品名稱、查無一律回固定範本（零幻覺）'
 };
 
 /* ======================================================================
@@ -5443,20 +5445,6 @@ function renderKBGeneralCategory(catId){
     </div>
   `;
 }
-function findGlobalAnswer(query){
-  let best = { score:0, data:null };
-  collectGlobalQA().forEach(item=>{
-    const s = qaScore(query, item);
-    if(s > best.score) best = { score:s, data:item };
-  });
-  if(best.score < 0.24 || !best.data) return null;
-  let out = esc(best.data.a).replace(/\n/g,'<br>');
-  if(best.data.internalNote){
-    const noteId = `note-${++__noteIdCounter}`;
-    out += `<div class="internal-note-toggle" onclick="toggleNote('${noteId}')">🔒 內部處理提示</div><div class="internal-note" id="${noteId}" style="display:none;">${esc(best.data.internalNote).replace(/\n/g,'<br>')}</div>`;
-  }
-  return out;
-}
 function sendKBChat(){
   const input = document.getElementById('kbChatInput');
   const val = input.value.trim();
@@ -5467,10 +5455,7 @@ function sendKBChat(){
   input.value = '';
   win.scrollTop = win.scrollHeight;
   setTimeout(()=>{
-    const answer = findGlobalAnswer(val);
-    const reply = answer
-      ? answer
-      : `目前跨品牌資料庫中查無與「${esc(val)}」相關的解答。可切換至「QA查詢」頁籤瀏覽完整清單，或洽詢客服，謝謝。`;
+    const reply = findGlobalAnswer(val);
     win.insertAdjacentHTML('beforeend', `<div class="msg bot">${reply}</div>`);
     win.scrollTop = win.scrollHeight;
   }, 300);
@@ -5907,6 +5892,7 @@ function filterQAList(brandId, keyword){
    matchScore／qaIntentBoost／keywordBoost 都會先經過它，所以單一品牌 AI 問答、跨品牌 AI 問答與搜尋篩選一起受惠。 */
 const QA_QUERY_SYNONYMS = [
   [/剛燙完頭髮|燙完頭髮|燙過頭髮|燙了頭髮|燙頭髮|剛燙完|剛燙過|燙完|燙過|剛燙/g, '燙髮'],
+  [/抗痘解方|抗痘產品|抗痘商品|痘痘系列|控痘系列|抗痘線/g, '抗痘系列'],
   [/孕婦|懷孕中|懷孕|有孕|孕媽/g, '孕期'],
   [/剛染完頭髮|染完頭髮|染過頭髮|染了頭髮|染頭髮|剛染完|剛染過|染完|染過|剛染/g, '染髮']
 ];
@@ -5924,6 +5910,7 @@ function textBigrams(s){
 function matchScore(query, text){
   if(!text) return 0;
   query = normalizeQAQuery(query);
+  text = normalizeQAQuery(text);   // 題庫文字也套用同一組正規化，兩邊用語一致
   const qGrams = textBigrams(query);
   if(!qGrams.length) return 0;
   const tSet = new Set(textBigrams(text));
@@ -5931,9 +5918,10 @@ function matchScore(query, text){
   qGrams.forEach(g=>{ if(tSet.has(g)) score++; });
   return score / qGrams.length; // normalized 0~1
 }
-const QA_INTENT_TERMS = ['孕婦','孕期','懷孕','哺乳','酒精','香精','香料','全素','動物實驗','蠶豆症','過敏','敏感肌','冷藏','保存期限','變質','沉澱','發炎','傷口','小孩','兒童','寶寶','嬰兒','術後','醫美','刺激','脫皮','受損','頭皮','指甲','蜜粉','色號','黑眼圈','起泡','泡沫','生髮','脫髮','掉髮','過度清潔','乾燥','染色','上色','褪色','維持','燙髮','鬢角','眉毛','手套','弄到','沾到','肝斑','斑點','美白','淡斑','痘疤','痘痘','粉刺','眼袋','脂肪球','雷射','類固醇','防腐劑','搭配乳液','按壓','滴管','蟎蟲','酒糟','毛囊角化'];
+const QA_INTENT_TERMS = ['抗痘系列','抗痘','杏仁酸','菸鹼醯胺','孕婦','孕期','懷孕','哺乳','酒精','香精','香料','全素','動物實驗','蠶豆症','過敏','敏感肌','冷藏','保存期限','變質','沉澱','發炎','傷口','小孩','兒童','寶寶','嬰兒','術後','醫美','刺激','脫皮','受損','頭皮','指甲','蜜粉','色號','黑眼圈','起泡','泡沫','生髮','脫髮','掉髮','過度清潔','乾燥','染色','上色','褪色','維持','燙髮','鬢角','眉毛','手套','弄到','沾到','肝斑','斑點','美白','淡斑','痘疤','痘痘','粉刺','眼袋','脂肪球','雷射','類固醇','防腐劑','搭配乳液','按壓','滴管','蟎蟲','酒糟','毛囊角化'];
 function qaIntentBoost(query, qaQuestion){
   query = normalizeQAQuery(query);
+  qaQuestion = normalizeQAQuery(qaQuestion);
   let boost = 0;
   QA_INTENT_TERMS.forEach(term=>{
     if(query.includes(term) && qaQuestion.includes(term)) boost += 0.8;
@@ -5955,7 +5943,7 @@ function keywordBoost(query, item){
 // 讓「題目整句都對得上」的題庫項目勝過只有幾個通用詞重疊的項目）＋意圖詞／自訂關鍵字加分。
 function qaCoverage(query, qaQuestion){
   const qSet = new Set(textBigrams(normalizeQAQuery(query)));
-  const tGrams = textBigrams(qaQuestion);
+  const tGrams = textBigrams(normalizeQAQuery(qaQuestion));
   if(!tGrams.length) return 0;
   let hit = 0;
   tGrams.forEach(g=>{ if(qSet.has(g)) hit++; });
@@ -5964,78 +5952,202 @@ function qaCoverage(query, qaQuestion){
 function qaScore(query, item){
   return matchScore(query, item.q) + 0.3 * qaCoverage(query, item.q) + qaIntentBoost(query, item.q) + keywordBoost(query, item);
 }
-function findAnswer(b, query){
-  // 1) match against brand Q&A (compute independently first)
-  let bestQA = { score:0, data:null };
-  (b.qa||[]).forEach(item=>{
-    const s = qaScore(query, item);
-    if(s > bestQA.score) bestQA = { score:s, data:item };
-  });
-  // also check per-product QA if present
-  (b.products||[]).forEach(p=>{
-    (p.qa||[]).forEach(item=>{
-      const s = qaScore(query, item);
-      if(s > bestQA.score) bestQA = { score:s, data:item };
-    });
-  });
-  // 2) match against product data (name / nickname / spec / intro / highlights / ingredients / usage / audience / caution)
-  let bestProduct = { score:0, data:null };
-  (b.products||[]).forEach(p=>{
-    const combined = [p.name, p.nickname, p.spec, p.intro, (p.highlights||[]).join('。'), (p.ingredients||[]).join('。'), p.usage, p.audience, p.caution].filter(Boolean).join('。');
-    let s = matchScore(query, combined);
-    // boost 1: name/nickname bigram overlap weighted heavier than general text (product identity signal)
-    const nameText = [p.name, p.nickname].filter(Boolean).join('　');
-    s += matchScore(query, nameText) * 0.6;
-    // boost 2: query contains full name/nickname, or contains a distinctive substring (2+ chars) of the product's name
-    const idNames = [p.name, p.nickname].filter(Boolean);
-    idNames.forEach(nm=>{
-      const nmClean = nm.replace(/[\s（）()【】0-9%．.＋+／\/－\-]/g,'');
-      if(nmClean.length >= 2 && (query.includes(nmClean) || nmClean.includes(query.replace(/[？?，,。.\s]/g,'')))){
-        s += 0.3;
-      }
-      // partial: any 2-4 char trailing segment of the product-type word (e.g. 精華液/爽膚棉/面膜) found in query
-      for(let len=4; len>=2; len--){
-        if(nmClean.length>=len){
-          const tail = nmClean.slice(-len);
-          if(query.includes(tail)){ s += 0.15; break; }
-        }
-      }
-    });
-    // boost 3: intent keyword overlap between query and this product's audience/caution text
-    s += qaIntentBoost(query, (p.audience||'') + (p.caution||'')) * 0.4;
-    if(s > bestProduct.score) bestProduct = { score:s, data:p };
-  });
-  const THRESHOLD = 0.24;
-  let best;
-  // 題庫（品牌 Q&A＋產品 QA 查詢）優先：只要題庫已有相當程度的命中（>= QA_PRIORITY_SCORE），
-  // 就直接採用題庫答案，不被「產品介紹」等長文字的籠統相似度蓋過。
-  const QA_PRIORITY_SCORE = 0.5;
-  if(bestQA.score >= bestProduct.score || bestQA.score >= QA_PRIORITY_SCORE){
-    best = { score:bestQA.score, type:'qa', data:bestQA.data };
-  } else {
-    best = { score:bestProduct.score, type:'product', data:bestProduct.data };
+/* ======================================================================
+   AI 商品問答 ｜ 六情境路由引擎（v4.6）
+   原則：①不跨商品湊字數 ②零幻覺（資料庫沒有就說查無）③提到商品名稱即「硬過濾」只查該商品
+   情境1 明確商品＋具體問題 → 只回該則答案　情境2 無商品名稱且多個商品都有 → 請補商品名稱
+   情境3 無商品名稱但只有一個商品有 → 答案＋提示頁尾　情境4 只有商品名稱 → 商品簡介＋熱門問題
+   情境5/6 查無 → 固定查無範本＋最相近問題提示（絕不借用其他商品答案）
+   ====================================================================== */
+const AI_MATCH_THRESHOLD = 0.6;                       // 低於此分數一律視為「查無」（零幻覺）
+const AI_SAFETY_TERMS = ['孕婦','孕期','備孕','懷孕','哺乳','嬰幼兒','嬰兒','寶寶','幼兒','小孩','兒童','特殊疾病','傷口','術後','蠶豆症'];
+const AI_FILLER_RE = /請問|想了解|想知道|了解|一下|介紹|資訊|資料|功效|成分|使用方法|怎麼用|如何使用|詳細|說明|商品|產品|有哪些|這個|這款|的|是什麼|什麼|嗎|呢|吧|啊|喔|哦|[\s？?！!，,。.、：:]/g;
+function aiNorm(s){ return (s||'').replace(/[\s，。！？、,.!?～~：:（）()「」『』【】{}｛｝\/／\-—·]/g,'').toLowerCase(); }
+function aiEscAttr(s){ return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function aiProductLabel(p, b, multiBrand){
+  const nm = (p.name||'').replace(/[{}]/g,'').replace(/\s+/g,' ').trim();
+  const core = p.nickname ? `${p.nickname}（${nm}）` : nm;
+  return (multiBrand && !nm.startsWith(b.name.split(' ')[0])) ? `${b.name} ${core}` : core;
+}
+function aiSeriesStem(qn, products){
+  const m = qn.match(/([一-龥A-Za-z0-9]+)系列/);
+  if(!m) return null;
+  const pre = m[1].slice(-6);
+  for(let len=Math.min(4,pre.length); len>=2; len--){
+    const stem = pre.slice(-len);
+    const ids = products.filter(pr=>pr.norm.includes(stem)).map(pr=>pr.id);
+    if(ids.length) return { stem, ids };
   }
-  if(best.score < THRESHOLD || !best.data) return null;
-  if(best.type === 'qa'){
-    let out = esc(best.data.a).replace(/\n/g,'<br>');
-    if(best.data.internalNote){
-      const noteId = `note-${++__noteIdCounter}`;
-      out += `<div class="internal-note-toggle" onclick="toggleNote('${noteId}')">🔒 內部處理提示</div><div class="internal-note" id="${noteId}" style="display:none;">${esc(best.data.internalNote).replace(/\n/g,'<br>')}</div>`;
-    }
-    return out;
+  return null;
+}
+/* 建立範圍內的商品索引與「單位」(unit)：每個商品一個單位、品牌通用題庫一個單位 */
+function aiBuildIndex(brands){
+  const multiBrand = brands.length > 1;
+  const products = [];
+  brands.forEach(b=>(b.products||[]).forEach(p=>products.push({ id:products.length, p, b, label:aiProductLabel(p,b,multiBrand), norm:aiNorm(p.name), aliases:[] })));
+  // 別名：全名、暱稱、全名的各種尾段（≥4字）；只保留「在範圍內唯一指向單一商品」的別名
+  const aliasOwners = {};
+  const addAlias = (pr, a)=>{ if(a && a.length>=2){ (aliasOwners[a] = aliasOwners[a] || new Set()).add(pr.id); } };
+  products.forEach(pr=>{
+    const full = pr.norm.replace(/\(.*$/,'');
+    addAlias(pr, pr.norm); addAlias(pr, full);
+    if(pr.p.nickname) addAlias(pr, aiNorm(pr.p.nickname));
+    for(let i=1; i<=full.length-4; i++) addAlias(pr, full.slice(i));
+  });
+  Object.keys(aliasOwners).forEach(a=>{
+    if(aliasOwners[a].size === 1){ products[[...aliasOwners[a]][0]].aliases.push(a); }
+  });
+  products.forEach(pr=>pr.aliases.sort((x,y)=>y.length-x.length));
+  const units = {};
+  const unitOf = (key,label,ids,generic)=> units[key] || (units[key] = { key, label, ids, generic, items:[] });
+  // 品牌通用單位
+  brands.forEach(b=>unitOf('brand:'+b.id, b.name, [], true));
+  // 產品自帶 QA
+  products.forEach(pr=>(pr.p.qa||[]).forEach(it=>unitOf('p:'+pr.id, pr.label, [pr.id], false).items.push(it)));
+  // 品牌 QA：題目提到商品別名／「XX系列」→ 歸屬該商品；否則為品牌通用
+  brands.forEach(b=>(b.qa||[]).forEach(it=>{
+    const qn = aiNorm(normalizeQAQuery(it.q));
+    const scope = products.filter(pr=>pr.b===b);
+    let hit = null;
+    for(const pr of scope){ const al = pr.aliases.find(a=>qn.includes(a)); if(al && (!hit || al.length>hit.len)) hit = { pr, len:al.length }; }
+    if(hit){ unitOf('p:'+hit.pr.id, hit.pr.label, [hit.pr.id], false).items.push(it); return; }
+    const sr = aiSeriesStem(qn, scope);
+    if(sr){ unitOf('s:'+b.id+sr.stem, sr.stem+'系列', sr.ids, false).items.push(it); return; }
+    unitOf('brand:'+b.id, b.name, [], true).items.push(it);
+  }));
+  return { products, units: Object.values(units).filter(u=>u.items.length), multiBrand };
+}
+/* 解析輸入 → { named:[商品id...], series:stem|null, rest:移除商品名稱後的問題 } */
+function aiParse(query, idx){
+  const qn = aiNorm(normalizeQAQuery(query));
+  let best = null, ties = [];
+  idx.products.forEach(pr=>{
+    const al = pr.aliases.find(a=>qn.includes(a));
+    if(!al) return;
+    if(!best || al.length>best.len){ best = { len:al.length, al }; ties = [pr]; }
+    else if(al.length===best.len){ ties.push(pr); }
+  });
+  let named = ties.map(p=>p.id), series = null, rest = qn;
+  if(best){ ties.forEach(pr=>pr.aliases.forEach(a=>{ rest = rest.split(a).join(''); })); }
+  else {
+    const sr = aiSeriesStem(qn, idx.products);
+    if(sr){ named = sr.ids; series = sr.stem; }
   }
-  // product match: assemble answer strictly from stored fields, no invented text
-  const p = best.data;
-  const formatMultiline = s => esc(s).replace(/\n/g,'<br>').replace(/(【[^【】]+】)/g,'<br><span class="pd-usage-heading">$1</span><br>').replace(/^(<br>)+/,'');
-  let parts = [];
-  parts.push(`關於「${esc(p.nickname ? p.nickname+' '+p.name : p.name)}」：`);
-  if(p.intro) parts.push(esc(p.intro));
-  if(p.ingredients && p.ingredients.length) parts.push(`主要成分：${p.ingredients.map(esc).join('；')}`);
-  if(p.usage) parts.push(`使用方法：${formatMultiline(p.usage)}`);
-  if(p.audience) parts.push(`適用族群：${formatMultiline(p.audience)}`);
-  if(p.caution) parts.push(`注意事項：${formatMultiline(p.caution)}`);
+  return { named, series, rest, qn };
+}
+function aiStripAliases(text, idx, ids){
+  let t = aiNorm(normalizeQAQuery(text));
+  ids.forEach(id=>idx.products[id].aliases.forEach(a=>{ t = t.split(a).join(''); }));
+  return t;
+}
+function aiItemScore(queryText, item, idx, ids){
+  const q = ids.length ? aiStripAliases(item.q, idx, ids) : item.q;
+  return qaScore(queryText, { q, keywords:item.keywords });
+}
+function aiAnswerHTML(item){
+  let out = esc(item.a).replace(/\n/g,'<br>');
+  if(item.internalNote){
+    const noteId = `note-${++__noteIdCounter}`;
+    out += `<div class="internal-note-toggle" onclick="toggleNote('${noteId}')">🔒 內部處理提示</div><div class="internal-note" id="${noteId}" style="display:none;">${esc(item.internalNote).replace(/\n/g,'<br>')}</div>`;
+  }
+  return out;
+}
+function aiChip(text, ask, mode){ return `<a class="ai-chip" href="javascript:void(0)" data-ask="${aiEscAttr(ask)}" data-mode="${aiEscAttr(mode)}" onclick="aiChipAsk(this)">${esc(text)}</a>`; }
+function aiChipAsk(el){
+  const mode = el.dataset.mode, ask = el.dataset.ask;
+  if(mode==='kb'){ const i=document.getElementById('kbChatInput'); if(i){ i.value=ask; sendKBChat(); } }
+  else { const i=document.getElementById('chatInput'); if(i){ i.value=ask; sendChat(mode); } }
+}
+function aiNotFoundHTML(query, similar, mode){
+  let out = `抱歉，資料庫中沒有找到與您問題完全符合的解答。`;
+  if(similar.length){
+    out += `<br>以下是系統為您找到最接近的問題提示：<br>` + similar.map((s,i)=>`${i+1}. ${aiChip(s,s,mode)}`).join('<br>');
+  }
+  return out + `<br>若仍無法解答，請聯繫產品團隊補充資料。`;
+}
+function aiIntroHTML(pr, idx, mode){
+  const p = pr.p;
+  const fmt = s => esc(s).replace(/\n/g,'<br>');
+  const parts = [`<b>${esc(pr.label)}</b>`];
+  parts.push(`<b>功效</b><br>` + (p.highlights && p.highlights.length ? p.highlights.map(esc).join('、') : (p.intro ? esc(p.intro) : '資料庫尚未收錄')));
+  parts.push(`<b>主要成分</b><br>` + (p.ingredients && p.ingredients.length ? p.ingredients.map(esc).join('<br>') : '資料庫尚未收錄'));
+  parts.push(`<b>使用方法</b><br>` + (p.usage ? fmt(p.usage) : '資料庫尚未收錄'));
+  const faqs = idx.units.filter(u=>u.ids.length===1 && u.ids[0]===pr.id).flatMap(u=>u.items).slice(0,6);
+  parts.push(`<b>熱門常見問題</b><br>` + (faqs.length ? faqs.map(f=>`・${aiChip(f.q, pr.label+' '+f.q, mode)}`).join('<br>') : '此商品目前尚未收錄專屬常見問題。'));
   return parts.join('<br><br>');
 }
+/* 主路由：回傳 HTML 字串（一律有結果，查無時為情境6範本） */
+function aiRoute(query, brands, mode){
+  const idx = aiBuildIndex(brands);
+  const { named, series, rest } = aiParse(query, idx);
+  const restCore = rest.replace(AI_FILLER_RE,'').replace(series ? new RegExp(series+'系列','g') : /$^/,'');
+  const isSafety = AI_SAFETY_TERMS.some(t=>normalizeQAQuery(query).includes(t));
+  // ---- 有指定商品：硬過濾 ----
+  if(named.length){
+    // 情境4：只有商品名稱
+    if(restCore.length <= 1){
+      if(named.length===1) return aiIntroHTML(idx.products[named[0]], idx, mode);
+      return `系列「${esc(series)}系列」包含以下商品，請點選或補充商品名稱：<br>` + named.map(id=>`・${aiChip(idx.products[id].label, idx.products[id].label, mode)}`).join('<br>');
+    }
+    // 硬過濾：該商品專屬題庫＋同品牌「通用」題庫（不含其他商品的題庫）；同分時商品專屬優先
+    const nb = new Set(named.map(id=>idx.products[id].b.id));
+    const locked = idx.units.filter(u=>u.ids.some(id=>named.includes(id)) || (u.generic && nb.has(u.key.slice(6))));
+    const qText = rest;
+    const scored = [];
+    locked.forEach(u=>u.items.forEach(it=>scored.push({ it, u, s:aiItemScore(qText, it, idx, named) + (u.generic ? 0 : 0.05) })));
+    scored.sort((a,b)=>b.s-a.s);
+    // 指定單一商品＋安全關鍵字：商品專屬題庫沒有時，先引用該商品「注意事項／適用族群」中的原文，再退回品牌通用題庫
+    if(named.length===1 && !series){
+      const nq = normalizeQAQuery(query);
+      const spec = scored.find(x=>!x.u.generic);
+      if(!(spec && spec.s >= AI_MATCH_THRESHOLD + 0.05)){
+        const grp = /孕期|備孕|懷孕|哺乳/.test(nq) ? /孕|哺乳/ : /嬰|幼兒|寶寶|小孩|兒童/.test(nq) ? /嬰|幼|兒童|寶寶|小孩/ : /傷口|術後|蠶豆症|特殊疾病/.test(nq) ? /傷口|術後|蠶豆|疾病/ : null;
+        if(grp){
+          const pr = idx.products[named[0]];
+          const lines = [pr.p.caution, pr.p.audience].filter(Boolean).join('\n').split('\n').map(l=>l.trim()).filter(l=>l && grp.test(l));
+          if(lines.length) return `<b>${esc(pr.label)}</b>（商品頁注意事項）<br>` + lines.map(esc).join('<br>');
+        }
+      }
+    }
+    if(scored.length && scored[0].s >= AI_MATCH_THRESHOLD + 0.05*(scored[0].u.generic?0:1)) return aiAnswerHTML(scored[0].it);   // 情境1
+    // 情境5→6：只在該商品範圍找最接近問題；不足兩則時才補品牌通用題庫（不借用其他商品）
+    let sim = scored.filter(x=>x.s>=0.2).map(x=>x.it.q);
+    if(sim.length<2){
+      const gen = [];
+      idx.units.filter(u=>u.generic && u.items.length && brands.some(b=>u.key==='brand:'+b.id && (idx.products[named[0]].b===b))).forEach(u=>u.items.forEach(it=>gen.push({ it, s:qaScore(qText,it) })));
+      gen.sort((a,b)=>b.s-a.s);
+      gen.filter(x=>x.s>=0.2).forEach(x=>{ if(!sim.includes(x.it.q)) sim.push(x.it.q); });
+    }
+    return aiNotFoundHTML(query, sim.slice(0,2), mode);
+  }
+  // ---- 未指定商品 ----
+  const scored = [];
+  idx.units.forEach(u=>u.items.forEach(it=>scored.push({ it, u, s:qaScore(query, it) })));
+  scored.sort((a,b)=>b.s-a.s);
+  const top = scored[0];
+  if(!top || top.s < AI_MATCH_THRESHOLD){
+    return aiNotFoundHTML(query, scored.filter(x=>x.s>=0.2).slice(0,2).map(x=>x.it.q), mode);   // 情境6
+  }
+  const keep = Math.max(AI_MATCH_THRESHOLD, top.s * (isSafety ? 0.6 : 0.85));
+  const unitBest = new Map();
+  scored.forEach(x=>{ if(x.s>=keep && !unitBest.has(x.u.key)) unitBest.set(x.u.key, x); });
+  const hits = [...unitBest.values()];
+  const needAsk = hits.length>1;
+  if(needAsk){                                                                                  // 情境2
+    const labels = hits.map(h=>h.u.generic && !idx.multiBrand ? null : h.u.label).filter(Boolean);
+    const lines = labels.length>1 ? labels : hits.map(h=>h.u.generic ? h.u.label : h.u.label);
+    return `『${esc(query)}』在多個商品中皆有相關說明。請補充您想查詢的【商品名稱】後再次提問：<br>` + lines.map(l=>`- ${aiChip(l, l+' '+query, mode)}`).join('<br>');
+  }
+  const only = hits[0];                                                                          // 情境3
+  let out = aiAnswerHTML(only.it);
+  if(!only.u.generic || idx.multiBrand){
+    out += `<hr style="border:none;border-top:1px solid var(--border);margin:10px 0 6px"><div style="font-size:14px;color:var(--muted)">💡 <i>以上是【${esc(only.u.label)}】的回答。若您指的是其他商品，請加上商品名稱後再次提問。</i></div>`;
+  }
+  return out;
+}
+function findAnswer(b, query){ return aiRoute(query, [b], b.id); }
+function findGlobalAnswer(query){ return aiRoute(query, BRANDS, 'kb'); }
+
 function sendChat(brandId){
   const b = getBrand(brandId);
   const input = document.getElementById('chatInput');
@@ -6047,10 +6159,7 @@ function sendChat(brandId){
   input.value = '';
   win.scrollTop = win.scrollHeight;
   setTimeout(()=>{
-    const answer = findAnswer(b, val);
-    const reply = answer
-      ? answer
-      : `目前資料庫中查無與「${esc(val)}」相關的解答。此問答僅提供品牌 Q&amp;A 與產品資料庫內已收錄的內容，若需要進一步協助，請洽詢客服或專業人員，謝謝。`;
+    const reply = findAnswer(b, val);
     win.insertAdjacentHTML('beforeend', `<div class="msg bot">${reply}</div>`);
     win.scrollTop = win.scrollHeight;
   }, 300);

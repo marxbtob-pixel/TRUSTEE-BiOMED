@@ -1015,9 +1015,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v4.6',
+  version: 'v4.7',
   date: '2026-11-06',
-  notes: 'AI 商品問答改為六情境路由：提到商品即硬過濾、未指定商品多品牌皆有則請補商品名稱、查無一律回固定範本（零幻覺）'
+  notes: 'Q&A 標籤：題目提到具體商品（全名／暱稱／系列）時改顯示商品名稱，僅品牌層級題目才顯示品牌名稱'
 };
 
 /* ======================================================================
@@ -3566,7 +3566,7 @@ function render(){
 function collectGlobalQA(){
   const all = [];
   BRANDS.forEach(b=>{
-    (b.qa||[]).forEach(item=>all.push({ q:item.q, a:item.a, source:esc(b.name), color:b.color, category:item.category, internalNote:item.internalNote, keywords:item.keywords, situation:item.situation, stockNote:item.stockNote }));
+    (b.qa||[]).forEach(item=>all.push({ q:item.q, a:item.a, source:esc(qaTagFor(b,item)), color:b.color, category:item.category, internalNote:item.internalNote, keywords:item.keywords, situation:item.situation, stockNote:item.stockNote }));
     (b.products||[]).forEach(p=>{
       (p.qa||[]).forEach(item=>all.push({ q:item.q, a:item.a, source:esc(p.nickname || p.name), color:b.color, category:item.category, internalNote:item.internalNote, keywords:item.keywords, situation:item.situation, stockNote:item.stockNote }));
     });
@@ -5794,7 +5794,7 @@ function switchAITab(brandId, tab){
 }
 function collectAllQA(b){
   const all = [];
-  (b.qa||[]).forEach(item=>all.push({ q:item.q, a:item.a, source:esc(b.name), category:item.category, internalNote:item.internalNote, situation:item.situation, stockNote:item.stockNote }));
+  (b.qa||[]).forEach(item=>all.push({ q:item.q, a:item.a, source:esc(qaTagFor(b,item)), category:item.category, internalNote:item.internalNote, situation:item.situation, stockNote:item.stockNote }));
   (b.products||[]).forEach(p=>{
     (p.qa||[]).forEach(item=>all.push({ q:item.q, a:item.a, source:esc(p.nickname || p.name), category:item.category, internalNote:item.internalNote, situation:item.situation, stockNote:item.stockNote }));
   });
@@ -6075,6 +6075,25 @@ function aiIntroHTML(pr, idx, mode){
   const faqs = idx.units.filter(u=>u.ids.length===1 && u.ids[0]===pr.id).flatMap(u=>u.items).slice(0,6);
   parts.push(`<b>熱門常見問題</b><br>` + (faqs.length ? faqs.map(f=>`・${aiChip(f.q, pr.label+' '+f.q, mode)}`).join('<br>') : '此商品目前尚未收錄專屬常見問題。'));
   return parts.join('<br><br>');
+}
+/* QA 標籤：題目有提到具體商品（全名／暱稱／唯一簡稱／XX系列）→ 標籤顯示商品名稱；否則才顯示品牌名稱 */
+const __qaTagIdx = {};
+function qaTagFor(b, item){
+  const idx = __qaTagIdx[b.id] || (__qaTagIdx[b.id] = aiBuildIndex([b]));
+  const qn = aiNorm(normalizeQAQuery(item.q || ''));
+  const hits = [];
+  idx.products.forEach(pr=>{
+    const al = pr.aliases.find(a=>qn.includes(a));
+    if(al) hits.push({ pr, len:al.length, al });
+  });
+  // 較長別名已涵蓋的較短別名不重複計（如「精華」vs「精華乳」）
+  const kept = hits.filter(h=>!hits.some(o=>o!==h && o.al.length>h.al.length && o.al.includes(h.al)));
+  if(kept.length){
+    return kept.map(h=>(h.pr.p.nickname || (h.pr.p.name||'').replace(/[{}]/g,'').replace(/\s+/g,' ').trim())).join('、');
+  }
+  const sr = aiSeriesStem(qn, idx.products);
+  if(sr) return sr.stem + '系列';
+  return b.name;
 }
 /* 主路由：回傳 HTML 字串（一律有結果，查無時為情境6範本） */
 function aiRoute(query, brands, mode){

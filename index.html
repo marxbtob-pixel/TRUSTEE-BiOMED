@@ -1015,9 +1015,9 @@
    系統版本資訊 —— 每次更新模板時，請同步修改這裡的版本號與日期/更新內容
    ====================================================================== */
 const SYSTEM_VERSION = {
-  version: 'v4.7',
+  version: 'v4.8',
   date: '2026-11-06',
-  notes: 'Q&A 標籤：題目提到具體商品（全名／暱稱／系列）時改顯示商品名稱，僅品牌層級題目才顯示品牌名稱'
+  notes: 'AI 商品問答：所有品牌與跨品牌問答的回答加上「一鍵複製」按鈕'
 };
 
 /* ======================================================================
@@ -5486,7 +5486,7 @@ function sendKBChat(){
   input.value = '';
   win.scrollTop = win.scrollHeight;
   setTimeout(()=>{
-    const reply = findGlobalAnswer(val);
+    const reply = aiWithCopy(findGlobalAnswer(val));
     win.insertAdjacentHTML('beforeend', `<div class="msg bot">${reply}</div>`);
     win.scrollTop = win.scrollHeight;
   }, 300);
@@ -6195,6 +6195,15 @@ function aiRoute(query, brands, mode){
   }
   return out;
 }
+/* AI 回答加上「一鍵複製」：複製純文字（<br>轉換行；不含內部處理提示的標題與內容） */
+function aiWithCopy(html){
+  const tmp = document.createElement('div');
+  tmp.innerHTML = String(html).replace(/<br\s*\/?>/gi,'\n').replace(/<hr[^>]*>/gi,'\n---\n');
+  tmp.querySelectorAll('.internal-note-toggle,.internal-note').forEach(n=>n.remove());
+  const text = tmp.textContent.replace(/\n{3,}/g,'\n\n').trim();
+  const idx = __qaAnswerRegistry.push(text) - 1;
+  return html + `<div><button class="qa-copy-btn" onclick="event.stopPropagation(); copyQAAnswer(this, ${idx})">📋 一鍵複製</button></div>`;
+}
 function findAnswer(b, query){ return aiRoute(query, [b], b.id); }
 function findGlobalAnswer(query){ return aiRoute(query, BRANDS, 'kb'); }
 
@@ -6209,7 +6218,7 @@ function sendChat(brandId){
   input.value = '';
   win.scrollTop = win.scrollHeight;
   setTimeout(()=>{
-    const reply = findAnswer(b, val);
+    const reply = aiWithCopy(findAnswer(b, val));
     win.insertAdjacentHTML('beforeend', `<div class="msg bot">${reply}</div>`);
     win.scrollTop = win.scrollHeight;
   }, 300);
